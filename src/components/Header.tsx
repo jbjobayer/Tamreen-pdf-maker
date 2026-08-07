@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   FileText,
   Globe,
-  Bell,
   Settings,
   User,
   Check,
@@ -38,7 +37,6 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [notificationOpen, setNotificationOpen] = useState(false);
 
   const selectedLangObj = LANGUAGE_OPTIONS.find((l) => l.code === currentLanguage) || LANGUAGE_OPTIONS[1];
 
@@ -62,9 +60,6 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-base tracking-tight font-inter text-slate-900 dark:text-white">
                 Tamreen <span className="text-blue-600">AI PDF</span>
-              </span>
-              <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800/50">
-                {getTranslation(currentLanguage, 'publicationGrade')}
               </span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block font-medium">
@@ -143,40 +138,6 @@ export const Header: React.FC<HeaderProps> = ({
                       {currentLanguage === lang.code && <Check className="w-3.5 h-3.5 text-blue-600" />}
                     </button>
                   ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Notification Button */}
-          <div className="relative">
-            <button
-              onClick={() => setNotificationOpen(!notificationOpen)}
-              className={`p-2 rounded-xl text-xs border transition relative min-h-[40px] min-w-[40px] flex items-center justify-center ${
-                isDarkMode
-                  ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
-                  : 'bg-slate-100/80 border-slate-200/80 text-slate-700 hover:bg-slate-200/80'
-              }`}
-            >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-            </button>
-
-            {notificationOpen && (
-              <div className={`absolute right-0 mt-2 w-72 rounded-2xl shadow-xl border p-3 z-50 animate-in fade-in ${
-                isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
-              }`}>
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-xs font-bold">Notifications</span>
-                  <span className="text-[10px] text-blue-600 font-medium">Clear All</span>
-                </div>
-                <div className="py-2 space-y-2 text-xs">
-                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40">
-                    <p className="font-semibold text-blue-900 dark:text-blue-300">✨ Tamreen V2 Active</p>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
-                      New mobile-first UI with 8-step wizard & 200+ templates loaded.
-                    </p>
-                  </div>
                 </div>
               </div>
             )}
