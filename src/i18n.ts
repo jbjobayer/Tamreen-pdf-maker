@@ -1,4 +1,4 @@
-export type SupportedLanguage = 'bn' | 'en' | 'ar' | 'ur' | 'hi' | 'ta' | 'fr' | 'es' | 'id';
+export type SupportedLanguage = 'bn' | 'en' | 'ar' | 'ur' | 'hi' | 'ta' | 'fr' | 'es' | 'id' | 'tr' | 'ms' | 'fa' | 'auto';
 
 export interface LanguageOption {
   code: SupportedLanguage;
@@ -19,9 +19,13 @@ export const LANGUAGE_OPTIONS: LanguageOption[] = [
   { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', dir: 'ltr', fontClass: 'font-inter' },
   { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', dir: 'ltr', fontClass: 'font-inter' },
   { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', flag: '🇮🇩', dir: 'ltr', fontClass: 'font-inter' },
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷', dir: 'ltr', fontClass: 'font-inter' },
+  { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', flag: '🇲🇾', dir: 'ltr', fontClass: 'font-inter' },
+  { code: 'fa', name: 'Persian', nativeName: 'فارسی', flag: '🇮🇷', dir: 'rtl', fontClass: 'font-arabic' },
+  { code: 'auto', name: 'Auto Detect', nativeName: '🌐 Auto Detect', flag: '🌐', dir: 'ltr', fontClass: 'font-inter' },
 ];
 
-export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
+export const TRANSLATIONS: Partial<Record<SupportedLanguage, Record<string, string>>> = {
   en: {
     appTitle: 'Tamreen AI PDF Studio',
     publicationGrade: 'PUBLICATION GRADE',
@@ -475,5 +479,5 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
 };
 
 export function getTranslation(lang: SupportedLanguage, key: string): string {
-  return TRANSLATIONS[lang]?.[key] || TRANSLATIONS.en[key] || key;
+  return TRANSLATIONS[lang]?.[key] || TRANSLATIONS.en?.[key] || key;
 }

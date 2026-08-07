@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { BottomNavigation, MainTab } from './components/BottomNavigation';
 import { HomePage } from './components/HomePage';
+import { CreationHub } from './components/CreationHub';
 import { CreateWizard } from './components/CreateWizard';
 import { TemplateMarketplace } from './components/TemplateMarketplace';
 import { MyPDFsLibrary } from './components/MyPDFsLibrary';
@@ -184,7 +185,7 @@ export default function App() {
             )}
 
             {mainTab === 'create' && (
-              <CreateWizard
+              <CreationHub
                 currentLanguage={currentLanguage}
                 isDarkMode={isDarkMode}
                 initialCategory={wizardInitialCategory}
