@@ -219,7 +219,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
   return (
     <div className="flex flex-col min-h-screen neu-bg text-slate-800 dark:text-slate-100">
       {/* ----------------- NEUMORPHIC TOP TOOLBAR ----------------- */}
-      <div className="no-print sticky top-0 z-30 neu-flat p-2.5 sm:p-4 rounded-b-3xl border-b border-white/60 dark:border-slate-800/60 shadow-md">
+      <div className="no-print sticky top-0 z-30 neu-flat p-2.5 sm:p-4 rounded-b-3xl border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="max-w-6xl mx-auto flex flex-col gap-3">
           {/* Row 1: Mode Switcher & Primary Action Buttons */}
           <div className="flex flex-wrap items-center justify-between gap-2.5">
@@ -441,7 +441,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   {document.hasCover && (
                     <div
                       id="pdf-cover-page"
-                      className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between overflow-hidden relative shadow-2xl rounded-sm`}
+                      className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between overflow-hidden relative border border-slate-300 rounded-sm`}
                       style={{ direction: isRTL ? 'rtl' : 'ltr' }}
                     >
                       {/* Decorative Header Border */}
@@ -528,7 +528,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   {/* ----------------- PAGE 2: TABLE OF CONTENTS ----------------- */}
                   {document.tableOfContents && document.tableOfContents.length > 0 && (
                     <div
-                      className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative shadow-2xl rounded-sm`}
+                      className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative border border-slate-300 rounded-sm`}
                       style={{ direction: isRTL ? 'rtl' : 'ltr' }}
                     >
                       {/* Header */}
@@ -571,7 +571,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
 
                   {/* ----------------- PAGE 3+: CONTENT BODY (A4 CANVAS) ----------------- */}
                   <div
-                    className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative shadow-2xl rounded-sm`}
+                    className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative border border-slate-300 rounded-sm`}
                     style={{ direction: isRTL ? 'rtl' : 'ltr' }}
                   >
                     {/* Running Header */}
@@ -835,8 +835,8 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
         )}
       </div>
 
-      {/* Floating Neumorphic Mobile Action Dock */}
-      <div className="no-print sm:hidden fixed bottom-16 left-3 right-3 z-40 p-2.5 neu-card rounded-2xl backdrop-blur-md flex items-center justify-around gap-2 shadow-2xl">
+      {/* Floating Mobile Action Dock */}
+      <div className="no-print sm:hidden fixed bottom-16 left-3 right-3 z-40 p-2.5 neu-card rounded-2xl backdrop-blur-md flex items-center justify-around gap-2">
         <button
           onClick={() => setViewMode(viewMode === 'paper' ? 'edit' : 'paper')}
           className="flex-1 py-2 px-3 neu-button rounded-xl text-xs font-black text-slate-800 dark:text-slate-100 flex items-center justify-center gap-1.5"

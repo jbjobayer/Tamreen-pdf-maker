@@ -1,6 +1,75 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+/**
+ * Converts unsupported CSS oklch() color expressions to hex or rgb format
+ * so that html2canvas can parse styles without throwing errors.
+ */
+function convertOklchToRgb(cssText: string): string {
+  if (!cssText || !cssText.includes('oklch')) return cssText;
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  return cssText.replace(/oklch\([^)]+\)/gi, (match) => {
+    if (ctx) {
+      try {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+        ctx.fillStyle = match;
+        const converted = ctx.fillStyle;
+        if (converted && converted !== 'rgba(0, 0, 0, 0)' && !converted.includes('oklch')) {
+          return converted;
+        }
+      } catch (e) {
+        // Fallback
+      }
+    }
+    return '#2563eb'; // Fallback blue accent
+  });
+}
+
+function sanitizeDocumentStyles(clonedDoc: Document) {
+  // 1. Sanitize all <style> elements
+  const styleTags = clonedDoc.querySelectorAll('style');
+  styleTags.forEach((styleEl) => {
+    if (styleEl.textContent && styleEl.textContent.includes('oklch')) {
+      styleEl.textContent = convertOklchToRgb(styleEl.textContent);
+    }
+  });
+
+  // 2. Sanitize styleSheets rules directly if accessible
+  try {
+    const styleSheets = Array.from(clonedDoc.styleSheets);
+    styleSheets.forEach((sheet) => {
+      try {
+        const cssRules = sheet.cssRules;
+        if (!cssRules) return;
+        for (let i = 0; i < cssRules.length; i++) {
+          const rule = cssRules[i];
+          if (rule.cssText && rule.cssText.includes('oklch')) {
+            const newText = convertOklchToRgb(rule.cssText);
+            sheet.deleteRule(i);
+            sheet.insertRule(newText, i);
+          }
+        }
+      } catch (e) {
+        // Ignore cross-origin / restriction errors
+      }
+    });
+  } catch (e) {
+    // Ignore stylesheet access errors
+  }
+
+  // 3. Sanitize inline element styles
+  const allElements = clonedDoc.querySelectorAll('*');
+  allElements.forEach((el) => {
+    const htmlEl = el as HTMLElement;
+    if (htmlEl.style && htmlEl.style.cssText && htmlEl.style.cssText.includes('oklch')) {
+      htmlEl.style.cssText = convertOklchToRgb(htmlEl.style.cssText);
+    }
+  });
+}
+
 export async function generateDownloadablePDF(title: string = 'Tamreen_AI_PDF_Publication') {
   try {
     // Find all rendered A4 pages in document
@@ -39,6 +108,9 @@ export async function generateDownloadablePDF(title: string = 'Tamreen_AI_PDF_Pu
         logging: false,
         backgroundColor: '#ffffff',
         onclone: (clonedDoc) => {
+          // Clean up oklch colors in cloned CSS to prevent html2canvas parser crash
+          sanitizeDocumentStyles(clonedDoc);
+
           const wrappers = clonedDoc.querySelectorAll('.a4-responsive-wrapper');
           wrappers.forEach((w) => {
             (w as HTMLElement).style.transform = 'none';
