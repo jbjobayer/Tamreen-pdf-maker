@@ -877,156 +877,191 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                 {/* --- OUTPUT STYLE ENGINE: MCQ BANK RENDERING --- */}
                 {sec.mcqs && sec.mcqs.length > 0 && (
                   <div className="my-6 space-y-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                      <span className="text-xs font-bold uppercase tracking-widest text-slate-700 flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-600" />
-                        <span>Multiple Choice Practice Bank ({sec.mcqs.length} Questions)</span>
-                      </span>
-                      <span className="text-[10px] font-mono text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded">
-                        EXAM STANDARD
-                      </span>
-                    </div>
-
-                    <div className="space-y-4">
-                      {sec.mcqs.map((q, qIdx) => (
-                        <div key={q.id || qIdx} className="p-4 bg-white rounded-xl border border-slate-200 space-y-3 shadow-sm">
-                          <div className="flex items-start justify-between gap-2">
-                            <h4 className="font-semibold text-sm text-slate-900 leading-snug">
-                              <span className="text-indigo-600 font-bold mr-1">Q{q.questionNumber || qIdx + 1}.</span>
-                              {q.question}
-                            </h4>
-                            {q.difficulty && (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200 shrink-0">
-                                {q.difficulty}
+                    {(() => {
+                      const isBnSec =
+                        document.language === 'bn' ||
+                        /[\u0980-\u09FF]/.test(sec.heading || sec.mcqs[0]?.question || '');
+                      return (
+                        <>
+                          <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                            <span className="text-xs font-bold uppercase tracking-widest text-slate-700 flex items-center gap-2">
+                              <Check className="w-4 h-4 text-emerald-600" />
+                              <span>
+                                {isBnSec
+                                  ? `বহুনির্বাচনী প্রশ্ন ব্যাংক (${sec.mcqs.length}টি প্রশ্ন)`
+                                  : `Multiple Choice Practice Bank (${sec.mcqs.length} Questions)`}
                               </span>
-                            )}
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                              {isBnSec ? 'পরীক্ষার মানদণ্ড' : 'EXAM STANDARD'}
+                            </span>
                           </div>
 
-                          {/* Options Grid */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                            {q.options.map((opt) => {
-                              const isCorrect = opt.key === q.correctAnswer;
-                              return (
-                                <div
-                                  key={opt.key}
-                                  className={`p-2.5 rounded-lg border flex items-start gap-2.5 transition ${
-                                    isCorrect
-                                      ? 'bg-emerald-50/80 border-emerald-400 text-emerald-950 font-medium'
-                                      : 'bg-slate-50 border-slate-200 text-slate-700'
-                                  }`}
-                                >
-                                  <span
-                                    className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 ${
-                                      isCorrect ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
-                                    }`}
-                                  >
-                                    {opt.key}
-                                  </span>
-                                  <span className="text-xs pt-0.5">{opt.text}</span>
+                          <div className="space-y-4">
+                            {sec.mcqs.map((q, qIdx) => (
+                              <div key={q.id || qIdx} className="p-4 bg-white rounded-xl border border-slate-200 space-y-3 shadow-sm">
+                                <div className="flex items-start justify-between gap-2">
+                                  <h4 className="font-semibold text-sm text-slate-900 leading-snug">
+                                    <span className="text-indigo-600 font-bold mr-1">
+                                      {isBnSec ? `প্রশ্ন ${q.questionNumber || qIdx + 1}.` : `Q${q.questionNumber || qIdx + 1}.`}
+                                    </span>
+                                    {q.question}
+                                  </h4>
+                                  {q.difficulty && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200 shrink-0">
+                                      {q.difficulty}
+                                    </span>
+                                  )}
                                 </div>
-                              );
-                            })}
-                          </div>
 
-                          {/* Explanation Box */}
-                          {q.explanation && (
-                            <div className="mt-2 p-3 bg-indigo-50/60 border border-indigo-100 rounded-lg text-xs space-y-1">
-                              <span className="font-bold text-indigo-900 text-[11px] uppercase tracking-wider block">
-                                Answer Explanation:
-                              </span>
-                              <p className="text-indigo-950 leading-relaxed text-[11px]">{q.explanation}</p>
-                              {q.reference && (
-                                <span className="text-[10px] text-indigo-600 font-mono block pt-1">
-                                  Reference: {q.reference}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                                {/* Options Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                  {q.options.map((opt) => {
+                                    const isCorrect = opt.key === q.correctAnswer;
+                                    return (
+                                      <div
+                                        key={opt.key}
+                                        className={`p-2.5 rounded-lg border flex items-start gap-2.5 transition ${
+                                          isCorrect
+                                            ? 'bg-emerald-50/80 border-emerald-400 text-emerald-950 font-medium'
+                                            : 'bg-slate-50 border-slate-200 text-slate-700'
+                                        }`}
+                                      >
+                                        <span
+                                          className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 ${
+                                            isCorrect ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
+                                          }`}
+                                        >
+                                          {opt.key}
+                                        </span>
+                                        <span className="text-xs pt-0.5">{opt.text}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                {/* Explanation Box */}
+                                {q.explanation && (
+                                  <div className="mt-2 p-3 bg-indigo-50/60 border border-indigo-100 rounded-lg text-xs space-y-1">
+                                    <span className="font-bold text-indigo-900 text-[11px] uppercase tracking-wider block">
+                                      {isBnSec ? 'উত্তরের ব্যাখ্যা:' : 'Answer Explanation:'}
+                                    </span>
+                                    <p className="text-indigo-950 leading-relaxed text-[11px]">{q.explanation}</p>
+                                    {q.reference && (
+                                      <span className="text-[10px] text-indigo-600 font-mono block pt-1">
+                                        {isBnSec ? `রেফারেন্স: ${q.reference}` : `Reference: ${q.reference}`}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 
                 {/* --- OUTPUT STYLE ENGINE: UNIVERSITY ANSWER SHEET RENDERING --- */}
                 {sec.universityAnswer && (
                   <div className="my-6 p-6 rounded-2xl bg-white border-2 border-indigo-900/20 space-y-5 shadow-sm">
-                    {/* Question Header */}
-                    <div className="p-4 bg-indigo-950 text-white rounded-xl space-y-1">
-                      <span className="text-[10px] uppercase font-mono text-indigo-300 tracking-widest block">
-                        HONOURS & MASTERS EXAMINATION MODEL RESPONSE
-                      </span>
-                      <h3 className="text-base font-bold font-playfair leading-snug">
-                        {sec.universityAnswer.questionTitle}
-                      </h3>
-                    </div>
+                    {(() => {
+                      const isBnVarsity =
+                        document.language === 'bn' ||
+                        /[\u0980-\u09FF]/.test(sec.universityAnswer.questionTitle || sec.universityAnswer.introduction || '');
+                      return (
+                        <>
+                          {/* Question Header */}
+                          <div className="p-4 bg-indigo-950 text-white rounded-xl space-y-1">
+                            <span className="text-[10px] uppercase font-mono text-indigo-300 tracking-widest block">
+                              {isBnVarsity
+                                ? 'বিশ্ববিদ্যালয় অনার্স ও মাস্টার্স পরীক্ষার ১০ নম্বরের মডেল উত্তর'
+                                : 'HONOURS & MASTERS EXAMINATION MODEL RESPONSE'}
+                            </span>
+                            <h3 className="text-base font-bold font-serif leading-snug">
+                              {sec.universityAnswer.questionTitle}
+                            </h3>
+                          </div>
 
-                    {/* 1. Introduction */}
-                    <div className="space-y-1.5">
-                      <h4 className="font-bold text-xs uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-1">
-                        1. Introduction & Contextual Framework
-                      </h4>
-                      <p className="text-xs text-slate-800 leading-relaxed">
-                        {sec.universityAnswer.introduction}
-                      </p>
-                    </div>
+                          {/* 1. Introduction */}
+                          {sec.universityAnswer.introduction && (
+                            <div className="space-y-1.5">
+                              <h4 className="font-bold text-xs uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-1">
+                                {isBnVarsity ? '১. ভূমিকা ও একাডেমিক প্রেক্ষাপট' : '1. Introduction & Contextual Framework'}
+                              </h4>
+                              <p className="text-xs text-slate-800 leading-relaxed">
+                                {sec.universityAnswer.introduction}
+                              </p>
+                            </div>
+                          )}
 
-                    {/* 2. Formal Definition */}
-                    <div className="p-3.5 bg-indigo-50/60 border-l-4 border-indigo-600 rounded-r-lg space-y-1">
-                      <span className="text-[11px] font-bold text-indigo-900 uppercase tracking-wider block">
-                        2. Core Academic Definition
-                      </span>
-                      <p className="text-xs text-indigo-950 font-serif italic leading-relaxed">
-                        {sec.universityAnswer.definition}
-                      </p>
-                    </div>
+                          {/* 2. Formal Definition */}
+                          {sec.universityAnswer.definition && (
+                            <div className="p-3.5 bg-indigo-50/60 border-l-4 border-indigo-600 rounded-r-lg space-y-1">
+                              <span className="text-[11px] font-bold text-indigo-900 uppercase tracking-wider block">
+                                {isBnVarsity ? '২. সংজ্ঞা ও মূল ধারণা' : '2. Core Academic Definition'}
+                              </span>
+                              <p className="text-xs text-indigo-950 font-serif italic leading-relaxed">
+                                {sec.universityAnswer.definition}
+                              </p>
+                            </div>
+                          )}
 
-                    {/* 3. Main Discussion */}
-                    <div className="space-y-1.5">
-                      <h4 className="font-bold text-xs uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-1">
-                        3. Comprehensive Discussion & Analytical Breakdown
-                      </h4>
-                      <p className="text-xs text-slate-800 leading-relaxed whitespace-pre-line">
-                        {sec.universityAnswer.mainDiscussion}
-                      </p>
-                    </div>
+                          {/* 3. Main Discussion */}
+                          {sec.universityAnswer.mainDiscussion && (
+                            <div className="space-y-1.5">
+                              <h4 className="font-bold text-xs uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-1">
+                                {isBnVarsity ? '৩. মূল আলোচনা ও বিশদ বিশ্লেষণ' : '3. Comprehensive Discussion & Analytical Breakdown'}
+                              </h4>
+                              <p className="text-xs text-slate-800 leading-relaxed whitespace-pre-line">
+                                {sec.universityAnswer.mainDiscussion}
+                              </p>
+                            </div>
+                          )}
 
-                    {/* 4. Evidence Points */}
-                    {sec.universityAnswer.evidencePoints && sec.universityAnswer.evidencePoints.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="font-bold text-xs uppercase tracking-wider text-indigo-900">
-                          4. Scholarly Evidence & Primary Sources
-                        </h4>
-                        <ul className="space-y-1.5 list-disc list-inside text-xs text-slate-800 pl-1">
-                          {sec.universityAnswer.evidencePoints.map((ev, eIdx) => (
-                            <li key={eIdx} className="leading-relaxed">
-                              {ev}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                          {/* 4. Evidence Points */}
+                          {sec.universityAnswer.evidencePoints && sec.universityAnswer.evidencePoints.length > 0 && (
+                            <div className="space-y-2">
+                              <h4 className="font-bold text-xs uppercase tracking-wider text-indigo-900">
+                                {isBnVarsity ? '৪. তথ্যভিত্তিক ব্যাখ্যা ও প্রামাণ্য উপাত্ত' : '4. Scholarly Evidence & Primary Sources'}
+                              </h4>
+                              <ul className="space-y-1.5 list-disc list-inside text-xs text-slate-800 pl-1">
+                                {sec.universityAnswer.evidencePoints.map((ev, eIdx) => (
+                                  <li key={eIdx} className="leading-relaxed">
+                                    {ev}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
 
-                    {/* 5. Critical Analysis & Conclusion */}
-                    {sec.universityAnswer.criticalAnalysis && (
-                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-800 block">
-                          5. Critical Evaluation & Synthesis
-                        </span>
-                        <p className="text-xs text-slate-700 leading-relaxed italic">
-                          {sec.universityAnswer.criticalAnalysis}
-                        </p>
-                      </div>
-                    )}
+                          {/* 5. Critical Analysis */}
+                          {sec.universityAnswer.criticalAnalysis && (
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                              <span className="text-xs font-bold uppercase tracking-wider text-slate-800 block">
+                                {isBnVarsity ? '৫. সমালোচনামূলক বিশ্লেষণ' : '5. Critical Evaluation & Synthesis'}
+                              </span>
+                              <p className="text-xs text-slate-700 leading-relaxed italic">
+                                {sec.universityAnswer.criticalAnalysis}
+                              </p>
+                            </div>
+                          )}
 
-                    <div className="space-y-1 pt-2 border-t border-slate-200">
-                      <span className="font-bold text-xs uppercase tracking-wider text-slate-900">
-                        Conclusion:
-                      </span>
-                      <p className="text-xs text-slate-800 leading-relaxed">
-                        {sec.universityAnswer.conclusion}
-                      </p>
-                    </div>
+                          {/* 6. Conclusion */}
+                          {sec.universityAnswer.conclusion && (
+                            <div className="space-y-1 pt-2 border-t border-slate-200">
+                              <span className="font-bold text-xs uppercase tracking-wider text-slate-900">
+                                {isBnVarsity ? 'উপসংহার:' : 'Conclusion:'}
+                              </span>
+                              <p className="text-xs text-slate-800 leading-relaxed">
+                                {sec.universityAnswer.conclusion}
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 
