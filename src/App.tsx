@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { BottomNavigation, MainTab } from './components/BottomNavigation';
 import { HomePage } from './components/HomePage';
@@ -22,9 +22,18 @@ export default function App() {
   // Dark Mode State
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
-  // Saved Documents
-  const [savedDocuments, setSavedDocuments] = useState<DocumentData[]>(sampleDocuments);
-  const [currentDoc, setCurrentDoc] = useState<DocumentData>(sampleDocuments[3] || sampleDocuments[0]);
+  // Synchronize Dark Mode Class on Root
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  // Saved Documents (Starts empty by user request)
+  const [savedDocuments, setSavedDocuments] = useState<DocumentData[]>([]);
+  const [currentDoc, setCurrentDoc] = useState<DocumentData>(sampleDocuments[0]);
 
   // Modal States
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
@@ -79,11 +88,11 @@ export default function App() {
   };
 
   const handleOCRComplete = (ocrData: OCRResult) => {
-    setCurrentDoc((prev) => ({
-      ...prev,
+    const ocrDoc: DocumentData = {
+      ...currentDoc,
+      id: 'doc-ocr-' + Date.now(),
       title: ocrData.title || 'ক্যামেরা স্ক্যানকৃত পিডিএফ ডক্যুমেন্ট',
       sections: [
-        ...prev.sections,
         {
           id: 'sec-ocr-' + Date.now(),
           heading: ocrData.title ? `স্ক্যান: ${ocrData.title}` : 'ক্যামেরা থেকে গৃহীত টেক্সট',
@@ -91,17 +100,20 @@ export default function App() {
           content: ocrData.extractedText,
         },
       ],
-    }));
+    };
+    setSavedDocuments((prev) => [ocrDoc, ...prev]);
+    setCurrentDoc(ocrDoc);
     setIsViewingCanvas(true);
   };
 
   const handleExportPDF = async () => {
     if (!isViewingCanvas) {
       setIsViewingCanvas(true);
+      setExportNotice('ক্যানভাস ও পেপার আউটপুট লোড হচ্ছে...');
+      await new Promise((res) => setTimeout(res, 500));
     }
     setExportNotice('পাবলিকেশন মানের বাংলা A4 পিডিএফ ডাউনলোডের জন্য প্রস্তুত করা হচ্ছে...');
     try {
-      await new Promise((res) => setTimeout(res, 400));
       await generateDownloadablePDF(currentDoc.title);
     } catch (err) {
       console.error(err);
@@ -115,15 +127,22 @@ export default function App() {
   };
 
   const handleSelectSampleDoc = (category: string) => {
-    const foundDoc = savedDocuments.find((d) => d.language === 'bn') || sampleDocuments[3];
-    if (foundDoc) {
-      setCurrentDoc(foundDoc);
+    let sample = sampleDocuments[0];
+    if (category === 'university_answer') sample = sampleDocuments[1];
+    if (category === 'islamic_book') sample = sampleDocuments[2];
+    if (category === 'study_notes') sample = sampleDocuments[3];
+
+    if (sample) {
+      if (!savedDocuments.some((d) => d.id === sample.id)) {
+        setSavedDocuments((prev) => [sample, ...prev]);
+      }
+      setCurrentDoc(sample);
       setIsViewingCanvas(true);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-bengali bg-[#eaf0f8] text-slate-800 antialiased selection:bg-blue-500/30">
+    <div className="min-h-screen flex flex-col font-bengali bg-[#eaf0f8] dark:bg-[#0b1329] text-slate-800 dark:text-slate-100 antialiased selection:bg-blue-500/30 transition-colors duration-200">
       {/* Top Header Bar */}
       <Header
         isDarkMode={isDarkMode}
@@ -144,17 +163,17 @@ export default function App() {
       <main className="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 py-5">
         {isViewingCanvas ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-between no-print neu-flat p-3 rounded-2xl border border-white/80">
+            <div className="flex items-center justify-between no-print neu-flat p-3 rounded-2xl border border-white/80 dark:border-slate-800">
               <button
                 onClick={() => setIsViewingCanvas(false)}
-                className="flex items-center gap-1.5 text-xs font-black text-blue-700 neu-button px-3 py-1.5 rounded-xl"
+                className="flex items-center gap-1.5 text-xs font-black text-blue-700 dark:text-blue-400 neu-button px-3 py-1.5 rounded-xl"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>হোমে ফিরে যান</span>
               </button>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-500 hidden sm:inline">ডক্যুমেন্ট:</span>
-                <span className="text-xs font-black text-blue-900 neu-pressed px-3 py-1 rounded-xl truncate max-w-[220px] sm:max-w-[320px]">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 hidden sm:inline">ডক্যুমেন্ট:</span>
+                <span className="text-xs font-black text-blue-900 dark:text-blue-300 neu-pressed px-3 py-1 rounded-xl truncate max-w-[220px] sm:max-w-[320px]">
                   {currentDoc.title || 'শিরোনামহীন ডক্যুমেন্ট'}
                 </span>
               </div>

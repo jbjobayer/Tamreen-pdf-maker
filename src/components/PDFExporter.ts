@@ -13,7 +13,7 @@ export async function generateDownloadablePDF(title: string = 'Tamreen_AI_PDF_Pu
 
     if (!pages || pages.length === 0) {
       // Trigger print dialog as reliable fallback
-      alert('পিডিএফ ডাউনলোড শুরু হচ্ছে... অনুগ্রহ করে প্রিন্ট ডায়ালগ থেকে "Save as PDF" নির্বাচন করুন।');
+      alert('পিডিএফ এরিয়া সনাক্ত করা যায়নি। প্রিন্ট উইন্ডো থেকে "Save as PDF" নির্বাচন করে ডাউনলোড করুন।');
       window.print();
       return;
     }
@@ -31,14 +31,23 @@ export async function generateDownloadablePDF(title: string = 'Tamreen_AI_PDF_Pu
     for (let i = 0; i < pages.length; i++) {
       const pageElement = pages[i] as HTMLElement;
 
-      // Ensure fonts and images are ready
+      // Ensure fonts and images are ready & reset transform on clone
       const canvas = await html2canvas(pageElement, {
-        scale: 2, // 300 DPI high resolution output
+        scale: 2, // High DPI
         useCORS: true,
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
-        windowWidth: 794, // Fixed A4 pixel width
+        onclone: (clonedDoc) => {
+          const wrappers = clonedDoc.querySelectorAll('.a4-responsive-wrapper');
+          wrappers.forEach((w) => {
+            (w as HTMLElement).style.transform = 'none';
+          });
+          const paperEls = clonedDoc.querySelectorAll('.pdf-page-container, .a4-paper');
+          paperEls.forEach((p) => {
+            (p as HTMLElement).style.boxShadow = 'none';
+          });
+        },
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -51,7 +60,7 @@ export async function generateDownloadablePDF(title: string = 'Tamreen_AI_PDF_Pu
       pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(pageHeight, imgHeight));
     }
 
-    // Clean title for PDF file saving, preserving Bengali/Unicode or fallback
+    // Clean title for PDF file saving
     const safeTitle = title
       .trim()
       .replace(/[/\\?%*:|"<>]/g, '_')
@@ -60,8 +69,8 @@ export async function generateDownloadablePDF(title: string = 'Tamreen_AI_PDF_Pu
     pdf.save(`${safeTitle}.pdf`);
   } catch (error) {
     console.error('PDF Generation Error:', error);
-    // Reliable fallback for mobile devices
-    alert('সরাসরি রেন্ডারিং করতে সমস্যা হয়েছে। "Save as PDF" মাধ্যমে ডাউনলোড করতে প্রিন্ট উইন্ডো খোলা হচ্ছে।');
+    // Reliable fallback for mobile & desktop devices
+    alert('সরাসরি রেন্ডারিং করতে সমস্যা হয়েছে। "Save as PDF" এর মাধ্যমে ডাউনলোড করতে প্রিন্ট উইন্ডো খোলা হচ্ছে।');
     window.print();
   }
 }
@@ -82,4 +91,5 @@ export function exportAsDocxOrText(title: string, content: string) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
 

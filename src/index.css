@@ -78,6 +78,51 @@
   transform: translateY(-2px);
 }
 
+/* Dark Mode Neumorphic Override */
+.dark body {
+  background-color: #0b1329;
+  color: #f1f5f9;
+}
+
+.dark .neu-bg {
+  background-color: #0b1329;
+}
+
+.dark .neu-flat {
+  background: #0f1a36;
+  box-shadow: 8px 8px 18px #060b18, -8px -8px 18px #182954;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark .neu-card {
+  background: #0f1a36;
+  box-shadow: 6px 6px 14px #060b18, -6px -6px 14px #182954;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark .neu-button {
+  background: #0f1a36;
+  box-shadow: 5px 5px 12px #060b18, -5px -5px 12px #182954;
+  color: #f1f5f9;
+}
+
+.dark .neu-button:hover {
+  box-shadow: 7px 7px 16px #040710, -7px -7px 16px #20366e;
+}
+
+.dark .neu-button:active, .dark .neu-pressed {
+  background: #0f1a36;
+  box-shadow: inset 4px 4px 8px #060b18, inset -4px -4px 8px #182954;
+  color: #60a5fa;
+}
+
+.dark .neu-input {
+  background: #0f1a36;
+  box-shadow: inset 3px 3px 8px #060b18, inset -3px -3px 8px #182954;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
 /* Word-style A4 Paper Specifications */
 .a4-paper {
   width: 210mm;
