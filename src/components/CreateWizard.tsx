@@ -248,8 +248,10 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
     }
   };
 
+  const isBn = currentLanguage === 'bn';
+
   return (
-    <div className="space-y-5 pb-24 animate-in fade-in max-w-3xl mx-auto">
+    <div className="space-y-5 pb-24 animate-in fade-in max-w-3xl mx-auto px-2 sm:px-0">
       {/* Wizard Header & Progress Steps */}
       <div className={`p-4 rounded-3xl border ${
         isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/80 shadow-sm'
@@ -257,26 +259,26 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
         <div className="flex items-center justify-between mb-3">
           <button
             onClick={() => (step > 1 ? setStep(step - 1) : onCancel())}
-            className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 p-1"
+            className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 p-2 min-h-[44px] touch-manipulation"
           >
             <ChevronLeft className="w-4 h-4" />
-            <span>{step > 1 ? 'Back' : 'Home'}</span>
+            <span>{step > 1 ? (isBn ? 'পেছনে' : 'Back') : (isBn ? 'হোম' : 'Home')}</span>
           </button>
 
-          <span className="text-xs font-extrabold text-blue-600 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-200/60 dark:border-blue-900/60">
-            Step {step} of 8
+          <span className="text-xs font-extrabold text-blue-600 bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 rounded-full border border-blue-200/60 dark:border-blue-900/60">
+            {isBn ? `ধাপ ${step} (মোট ৮)` : `Step ${step} of 8`}
           </span>
 
           <button
             onClick={onCancel}
-            className="text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 min-h-[44px] touch-manipulation"
           >
-            Cancel
+            {isBn ? 'বাতিল' : 'Cancel'}
           </button>
         </div>
 
         {/* Visual Progress Bar */}
-        <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+        <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
           <div
             className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 h-full transition-all duration-300 rounded-full"
             style={{ width: `${(step / 8) * 100}%` }}
@@ -289,28 +291,28 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
         <div className="space-y-4 animate-in fade-in">
           <div className="text-center space-y-1">
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              Step 1: What do you want to create?
+              {isBn ? 'ধাপ ১: আপনি কী তৈরি করতে চান?' : 'Step 1: What do you want to create?'}
             </h2>
             <p className="text-xs text-slate-500">
-              Select the type of publication document you need.
+              {isBn ? 'আপনার প্রয়োজনীয় পাবলিকেশন ডকুমেন্টের টাইপ সিলেক্ট করুন।' : 'Select the type of publication document you need.'}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              { id: 'study_notes', name: '📘 Study Notes', desc: 'Chapter summaries & formula cheatsheets' },
-              { id: 'university_answer', name: '🎓 University Answer Sheet', desc: '10-pt Honours/Masters model answers' },
-              { id: 'mcq_book', name: '☑ MCQ Practice Book', desc: 'Question bank with answers & solutions' },
-              { id: 'research_paper', name: '📚 Research Monograph', desc: 'IEEE/Oxford 2-column academic paper' },
-              { id: 'islamic_book', name: '🕌 Islamic Manuscript', desc: 'Tafsir, Hadith references & arabic' },
-              { id: 'assignment', name: '📄 Assignment Document', desc: 'University assignment with cover page' },
-              { id: 'worksheet', name: '📋 Worksheet & Tests', desc: 'Printable practice problems & tests' },
-              { id: 'guide_book', name: '📖 Guide Book / Manual', desc: 'Multi-chapter handbook & textbook' },
+              { id: 'study_notes', name: isBn ? '📘 স্টাডি নোটস' : '📘 Study Notes', desc: isBn ? 'অধ্যায় সংক্ষেপ ও সূত্র চিটশিট' : 'Chapter summaries & formula cheatsheets' },
+              { id: 'university_answer', name: isBn ? '🎓 বিশ্ববিদ্যালয় মডেল উত্তর' : '🎓 University Answer Sheet', desc: isBn ? 'অনার্স ও মাস্টার্স ১০ নম্বরের মডেল উত্তর' : '10-pt Honours/Masters model answers' },
+              { id: 'mcq_book', name: '☑ ' + (isBn ? 'এমসিকিউ প্রশ্ন ব্যাংক' : 'MCQ Practice Book'), desc: isBn ? 'ব্যাখ্যা ও রেফারেন্সসহ প্রশ্ন ব্যাংক' : 'Question bank with answers & solutions' },
+              { id: 'research_paper', name: '📚 ' + (isBn ? 'রিসার্চ পেপার / মনোগ্রাফ' : 'Research Monograph'), desc: isBn ? 'অক্সফোর্ড ডাবল-কলাম একাডেমিক লেআউট' : 'IEEE/Oxford 2-column academic paper' },
+              { id: 'islamic_book', name: '🕌 ' + (isBn ? 'ইসলামিক বই ও কিতাব' : 'Islamic Manuscript'), desc: isBn ? 'তাফসীর, হাদীস রেফারেন্স ও আরবি' : 'Tafsir, Hadith references & arabic' },
+              { id: 'assignment', name: '📄 ' + (isBn ? 'বিশ্ববিদ্যালয় অ্যাসাইনমেন্ট' : 'Assignment Document'), desc: isBn ? 'কভার পেজ ও সূচিপত্রসহ অ্যাসাইনমেন্ট' : 'University assignment with cover page' },
+              { id: 'worksheet', name: '📋 ' + (isBn ? 'ওয়ার্কশীট ও পরীক্ষা সেট' : 'Worksheet & Tests'), desc: isBn ? 'প্রিন্টযোগ্য প্র্যাকটিস সমস্যা ও টেস্ট' : 'Printable practice problems & tests' },
+              { id: 'guide_book', name: '📖 ' + (isBn ? 'গাইড বুক ও হ্যান্ডবুক' : 'Guide Book / Manual'), desc: isBn ? 'বহু-অধ্যায়ের পাঠ্যবই ও গাইড' : 'Multi-chapter handbook & textbook' },
             ].map((cat) => (
               <div
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between min-h-[64px] ${
+                className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between min-h-[64px] touch-manipulation active:scale-98 ${
                   selectedCategory === cat.id
                     ? 'bg-blue-50/90 dark:bg-blue-950/60 border-blue-600 shadow-md ring-2 ring-blue-500/20'
                     : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300'
@@ -331,9 +333,9 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
 
           <button
             onClick={() => setStep(2)}
-            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px]"
+            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px] touch-manipulation active:scale-98"
           >
-            <span>Continue to Content Source</span>
+            <span>{isBn ? 'পরবর্তী ধাপ: ইনপুট মাধ্যম' : 'Continue to Content Source'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -344,24 +346,24 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
         <div className="space-y-4 animate-in fade-in">
           <div className="text-center space-y-1">
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              Step 2: How will you provide content?
+              {isBn ? 'ধাপ ২: তথ্য কীভাবে প্রদান করবেন?' : 'Step 2: How will you provide content?'}
             </h2>
             <p className="text-xs text-slate-500">
-              Choose your input method (Topic, Text, Image, PDF, Voice, URL)
+              {isBn ? 'আপনার পছন্দসই ইনপুট মাধ্যম নির্বাচন করুন (টপিক, টেক্সট, ছবি, পিডিএফ, ভয়েস)' : 'Choose your input method (Topic, Text, Image, PDF, Voice, URL)'}
             </p>
           </div>
 
           {/* Large Cards Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {[
-              { id: 'topic', label: '✍ Type Topic', icon: <Type className="w-5 h-5 text-blue-600" /> },
-              { id: 'paste', label: '📄 Paste Text', icon: <AlignLeft className="w-5 h-5 text-indigo-600" /> },
-              { id: 'ocr', label: '📷 Scan Image', icon: <Camera className="w-5 h-5 text-teal-600" /> },
-              { id: 'pdf', label: '📚 Upload PDF', icon: <Upload className="w-5 h-5 text-purple-600" /> },
-              { id: 'docx', label: '📝 Upload DOCX', icon: <Upload className="w-5 h-5 text-sky-600" /> },
-              { id: 'voice', label: '🎙 Voice Input', icon: <Mic className="w-5 h-5 text-rose-600" /> },
-              { id: 'url', label: '🔗 Website URL', icon: <Link className="w-5 h-5 text-amber-600" /> },
-              { id: 'youtube', label: '▶ YouTube', icon: <Youtube className="w-5 h-5 text-red-600" /> },
+              { id: 'topic', label: isBn ? '✍ টপিক লিখুন' : '✍ Type Topic', icon: <Type className="w-5 h-5 text-blue-600" /> },
+              { id: 'paste', label: isBn ? '📄 টেক্সট পেস্ট' : '📄 Paste Text', icon: <AlignLeft className="w-5 h-5 text-indigo-600" /> },
+              { id: 'ocr', label: isBn ? '📷 ছবি স্ক্যান' : '📷 Scan Image', icon: <Camera className="w-5 h-5 text-teal-600" /> },
+              { id: 'pdf', label: isBn ? '📚 পিডিএফ আপলোড' : '📚 Upload PDF', icon: <Upload className="w-5 h-5 text-purple-600" /> },
+              { id: 'docx', label: isBn ? '📝 ডক আপলোড' : '📝 Upload DOCX', icon: <Upload className="w-5 h-5 text-sky-600" /> },
+              { id: 'voice', label: isBn ? '🎙 ভয়েস ইনপুট' : '🎙 Voice Input', icon: <Mic className="w-5 h-5 text-rose-600" /> },
+              { id: 'url', label: isBn ? '🔗 ওয়েবসাইট লিঙ্ক' : '🔗 Website URL', icon: <Link className="w-5 h-5 text-amber-600" /> },
+              { id: 'youtube', label: isBn ? '▶ ইউটিউব লিঙ্ক' : '▶ YouTube', icon: <Youtube className="w-5 h-5 text-red-600" /> },
             ].map((opt) => (
               <div
                 key={opt.id}
@@ -369,7 +371,7 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
                   setContentSource(opt.id as any);
                   if (opt.id === 'ocr') onOpenCameraModal();
                 }}
-                className={`p-3.5 rounded-2xl border text-center transition cursor-pointer flex flex-col items-center justify-center gap-2 min-h-[80px] ${
+                className={`p-3.5 rounded-2xl border text-center transition cursor-pointer flex flex-col items-center justify-center gap-2 min-h-[80px] touch-manipulation active:scale-95 ${
                   contentSource === opt.id
                     ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 shadow-sm ring-2 ring-blue-500/20'
                     : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
@@ -386,13 +388,13 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
             {contentSource === 'topic' && (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Enter Subject or Book Chapter Topic:
+                  {isBn ? 'বিষয় বা অধ্যায়ের শিরোনাম লিখুন:' : 'Enter Subject or Book Chapter Topic:'}
                 </label>
                 <textarea
                   value={topicInput}
                   onChange={(e) => setTopicInput(e.target.value)}
-                  placeholder="e.g. Higher Secondary Chemistry Chapter 3: Chemical Bonding & Periodic Trends..."
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs min-h-[90px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={isBn ? 'যেমন: উচ্চ মাধ্যমিক রসায়ন ৩য় অধ্যায়: পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন...' : 'e.g. Higher Secondary Chemistry Chapter 3: Chemical Bonding & Periodic Trends...'}
+                  className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs min-h-[95px] focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             )}
@@ -400,13 +402,13 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
             {contentSource === 'paste' && (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Paste Notes or Article Text:
+                  {isBn ? 'লেকচার নোটস বা টেক্সট পেস্ট করুন:' : 'Paste Notes or Article Text:'}
                 </label>
                 <textarea
                   value={pastedText}
                   onChange={(e) => setPastedText(e.target.value)}
-                  placeholder="Paste lecture notes, raw manuscript, or draft content here..."
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs min-h-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={isBn ? 'এখানে লেকচার নোটস, প্রবন্ধ বা কাঁচা লেখা পেস্ট করুন...' : 'Paste lecture notes, raw manuscript, or draft content here...'}
+                  className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs min-h-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             )}
@@ -415,9 +417,9 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
               <div className="p-6 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl text-center space-y-2">
                 <Upload className="w-8 h-8 mx-auto text-blue-600" />
                 <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Click or drag file to upload ({contentSource.toUpperCase()})
+                  {isBn ? `ফাইল আপলোড করতে ক্লিক করুন (${contentSource.toUpperCase()})` : `Click or drag file to upload (${contentSource.toUpperCase()})`}
                 </p>
-                <p className="text-[10px] text-slate-400">Supported format: .{contentSource}</p>
+                <p className="text-[10px] text-slate-400">{isBn ? 'সমর্থিত ফরম্যাট:' : 'Supported format:'} .{contentSource}</p>
               </div>
             )}
 
@@ -425,14 +427,14 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
               <div className="text-center py-4 space-y-3">
                 <button
                   onClick={() => setIsRecordingVoice(!isRecordingVoice)}
-                  className={`p-4 rounded-full shadow-lg transition ${
+                  className={`p-4 rounded-full shadow-lg transition touch-manipulation ${
                     isRecordingVoice ? 'bg-red-600 animate-pulse text-white' : 'bg-blue-600 text-white'
                   }`}
                 >
                   <Mic className="w-8 h-8" />
                 </button>
                 <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {isRecordingVoice ? 'Listening... Speak your topic or notes clearly' : 'Tap mic to dictate topic'}
+                  {isRecordingVoice ? (isBn ? 'শুনছি... আপনার বিষয় বা নোট স্পষ্টভাবে বলুন' : 'Listening... Speak your topic or notes clearly') : (isBn ? 'টপিক রেকর্ড করতে মাইক্রোফোনে ট্যাপ করুন' : 'Tap mic to dictate topic')}
                 </p>
               </div>
             )}
@@ -440,7 +442,7 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
             {(contentSource === 'url' || contentSource === 'youtube') && (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Enter {contentSource === 'youtube' ? 'YouTube Link' : 'Website URL'}:
+                  {contentSource === 'youtube' ? (isBn ? 'ইউটিউব লিঙ্ক দিন:' : 'Enter YouTube Link:') : (isBn ? 'ওয়েবসাইট ইউআরএল দিন:' : 'Enter Website URL:')}
                 </label>
                 <input
                   type="url"
@@ -455,9 +457,9 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
 
           <button
             onClick={() => setStep(3)}
-            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px]"
+            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px] touch-manipulation active:scale-98"
           >
-            <span>Continue to Select Output</span>
+            <span>{isBn ? 'পরবর্তী ধাপ: আউটপুট নির্বাচন' : 'Continue to Select Output'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -468,29 +470,29 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
         <div className="space-y-4 animate-in fade-in">
           <div className="text-center space-y-1">
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              Step 3: Select Output Formats
+              {isBn ? 'ধাপ ৩: আউটপুট ফরম্যাট সিলেক্ট করুন' : 'Step 3: Select Output Formats'}
             </h2>
             <p className="text-xs text-slate-500">
-              Multiple selections allowed (Default: Professional PDF)
+              {isBn ? 'একাধিক ফরম্যাট সিলেক্ট করতে পারেন (ডিফল্ট: প্রফেশনাল পিডিএফ)' : 'Multiple selections allowed (Default: Professional PDF)'}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              { id: 'pdf', title: '📄 Professional PDF', desc: 'Publication grade printable vector PDF' },
-              { id: 'copy_ready', title: '📋 Copy Ready Text', desc: 'Formatted text ready to copy-paste' },
-              { id: 'docx', title: '📝 Word DOCX', desc: 'Editable Microsoft Word document' },
-              { id: 'epub', title: '📚 EPUB eBook', desc: 'eReader standard file for phones & Kindle' },
-              { id: 'markdown', title: '📑 Markdown', desc: 'Notion & GitHub standard markdown' },
-              { id: 'html', title: '🌐 HTML Web Page', desc: 'Standalone responsive webpage' },
-              { id: 'presentation', title: '📊 Slide Presentation', desc: 'Presentation slides format' },
+              { id: 'pdf', title: isBn ? '📄 প্রফেশনাল পিডিএফ' : '📄 Professional PDF', desc: isBn ? 'হাই-রেজোলিউশন ভেক্টর প্রিন্টেবল পিডিএফ' : 'Publication grade printable vector PDF' },
+              { id: 'copy_ready', title: isBn ? '📋 কপি রেডি টেক্সট' : '📋 Copy Ready Text', desc: isBn ? 'কপি-পেস্ট করার উপযোগী ফরম্যাট' : 'Formatted text ready to copy-paste' },
+              { id: 'docx', title: isBn ? '📝 ওয়ার্ড ডক (DOCX)' : '📝 Word DOCX', desc: isBn ? 'মাইক্রোসফট ওয়ার্ড এডিটেবল ফাইল' : 'Editable Microsoft Word document' },
+              { id: 'epub', title: isBn ? '📚 ই-পাব ই-বুক' : '📚 EPUB eBook', desc: isBn ? 'মোবাইল ও কিন্ডল ই-বুক রিডার ফরম্যাট' : 'eReader standard file for phones & Kindle' },
+              { id: 'markdown', title: isBn ? '📑 মার্কডাউন' : '📑 Markdown', desc: isBn ? 'নোশন ও গিটহাব স্ট্যান্ডার্ড মার্কডাউন' : 'Notion & GitHub standard markdown' },
+              { id: 'html', title: isBn ? '🌐 এইচটিএমএল ওয়েব পেজ' : '🌐 HTML Web Page', desc: isBn ? 'রেসপনসিভ ওয়েব ব্রাউজার পেজ' : 'Standalone responsive webpage' },
+              { id: 'presentation', title: isBn ? '📊 প্রেজেন্টেশন স্লাইড' : '📊 Slide Presentation', desc: isBn ? 'প্রেজেন্টেশন স্লাইড ডেক ফরম্যাট' : 'Presentation slides format' },
             ].map((opt) => {
               const isSelected = selectedOutputs.includes(opt.id);
               return (
                 <div
                   key={opt.id}
                   onClick={() => toggleOutputFormat(opt.id)}
-                  className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between min-h-[60px] ${
+                  className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between min-h-[60px] touch-manipulation active:scale-98 ${
                     isSelected
                       ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 shadow-sm ring-2 ring-blue-500/20'
                       : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
@@ -512,9 +514,9 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
 
           <button
             onClick={() => setStep(4)}
-            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px]"
+            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px] touch-manipulation active:scale-98"
           >
-            <span>Continue to Choose Style</span>
+            <span>{isBn ? 'পরবর্তী ধাপ: ডিজাইন স্টাইল' : 'Continue to Choose Style'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -525,25 +527,25 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
         <div className="space-y-4 animate-in fade-in">
           <div className="text-center space-y-1">
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              Step 4: Choose Design Style
+              {isBn ? 'ধাপ ৪: ডিজাইন স্টাইল বেছে নিন' : 'Step 4: Choose Design Style'}
             </h2>
             <p className="text-xs text-slate-500">
-              Recommended publication templates (Select one to apply formatting)
+              {isBn ? 'আন্তর্জাতিক মানের পাবলিকেশন টেমপ্লেটসমূহ' : 'Recommended publication templates (Select one to apply formatting)'}
             </p>
           </div>
 
           <div className="space-y-3">
             {[
-              { id: 'oxford', name: 'Oxford Academic Press', rating: '★★★★★', desc: 'Classic double-line header with serif typography & formal margins', badge: 'MOST POPULAR' },
-              { id: 'cambridge', name: 'Cambridge Science Series', rating: '★★★★★', desc: 'Modern teal accent headers with clean multi-column layouts', badge: 'RECOMMENDED' },
-              { id: 'islamic', name: 'Islamic Premium Manuscript', rating: '★★★★★', desc: 'Gold/emerald borders with Noto Naskh Arabic & Tafsir styling', badge: 'HERITAGE' },
-              { id: 'govt_exam', name: 'Government Exam & BCS Guide', rating: '★★★★★', desc: 'High-density question paper layout with bold key answers', badge: 'EXAM GRADE' },
-              { id: 'minimal', name: 'Minimal Academic', rating: '★★★★★', desc: 'Clean Apple-inspired whitespace layout with subtle dividers', badge: 'MINIMALIST' },
+              { id: 'oxford', name: isBn ? 'অক্সফোর্ড একাডেমিক প্রেস' : 'Oxford Academic Press', rating: '★★★★★', desc: isBn ? 'ক্ল্যাসিক ডাবল-লাইন হেডার ও ক্লাসিক সেফিপ ফন্ট' : 'Classic double-line header with serif typography & formal margins', badge: isBn ? 'জনপ্রিয়' : 'MOST POPULAR' },
+              { id: 'cambridge', name: isBn ? 'কেমব্রিজ সায়েন্স সিরিজ' : 'Cambridge Science Series', rating: '★★★★★', desc: isBn ? 'আধুনিক টিল একসেন্ট ও মাল্টি-কলাম লেআউট' : 'Modern teal accent headers with clean multi-column layouts', badge: isBn ? 'পছন্দসই' : 'RECOMMENDED' },
+              { id: 'islamic', name: isBn ? 'ইসলামিক প্রিমিয়াম পাণ্ডুলিপি' : 'Islamic Premium Manuscript', rating: '★★★★★', desc: isBn ? 'গোল্ড/এমেরাল্ড বর্ডার ও নূরী নাস্তালীক/নাসখ আরবি' : 'Gold/emerald borders with Noto Naskh Arabic & Tafsir styling', badge: isBn ? 'ঐতিহ্যবাহী' : 'HERITAGE' },
+              { id: 'govt_exam', name: isBn ? 'বিসিএস ও সরকারি চাকরি গাইড' : 'Government Exam & BCS Guide', rating: '★★★★★', desc: isBn ? 'পরীক্ষার্থীদের জন্য প্রশ্ন ও বোল্ড সঠিক উত্তর লেআউট' : 'High-density question paper layout with bold key answers', badge: isBn ? 'পরীক্ষার মানদণ্ড' : 'EXAM GRADE' },
+              { id: 'minimal', name: isBn ? 'মিনিমাল একাডেমিক' : 'Minimal Academic', rating: '★★★★★', desc: isBn ? 'ক্লিন আধুনিক লেআউট ও হোয়াইটস্পেস' : 'Clean Apple-inspired whitespace layout with subtle dividers', badge: isBn ? 'মিনিমালিস্ট' : 'MINIMALIST' },
             ].map((tpl) => (
               <div
                 key={tpl.id}
                 onClick={() => setSelectedTemplate(tpl.id)}
-                className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
+                className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between min-h-[64px] touch-manipulation active:scale-98 ${
                   selectedTemplate === tpl.id
                     ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 shadow-md ring-2 ring-blue-500/20'
                     : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
@@ -571,17 +573,17 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
           <div className="text-center pt-1">
             <button
               onClick={() => setShowAllTemplatesModal(true)}
-              className="text-xs font-bold text-blue-600 hover:text-blue-700 border-b border-blue-600 pb-0.5"
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 border-b border-blue-600 pb-0.5 p-1 touch-manipulation"
             >
-              Browse All 200+ Templates
+              {isBn ? 'সব ২০০+ টেমপ্লেট গ্যালারি দেখুন' : 'Browse All 200+ Templates'}
             </button>
           </div>
 
           <button
             onClick={() => setStep(5)}
-            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px]"
+            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px] touch-manipulation active:scale-98"
           >
-            <span>Continue to AI Enhancements</span>
+            <span>{isBn ? 'পরবর্তী ধাপ: এআই এনহ্যান্সমেন্ট' : 'Continue to AI Enhancements'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -592,42 +594,42 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
         <div className="space-y-4 animate-in fade-in">
           <div className="text-center space-y-1">
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              Step 5: AI Enhancements
+              {isBn ? 'ধাপ ৫: এআই এনহ্যান্সমেন্ট সিলেক্ট করুন' : 'Step 5: AI Enhancements'}
             </h2>
             <p className="text-xs text-slate-500">
-              Toggle automatic document enhancements (Everything is optional)
+              {isBn ? 'স্বয়ংক্রিয়ভাবে ডকুমেন্ট উন্নত করার ফিচারসমূহ (সবগুলো ঐচ্ছিক)' : 'Toggle automatic document enhancements (Everything is optional)'}
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {[
-              { id: 'cover', label: '☑ Add Cover Page' },
-              { id: 'toc', label: '☑ Table of Contents' },
-              { id: 'summary', label: '☑ Executive Summary' },
-              { id: 'keyPoints', label: '☑ Key Points' },
-              { id: 'diagrams', label: '☑ Visual Diagrams' },
-              { id: 'mindMap', label: '☑ Mind Map' },
-              { id: 'mcq', label: '☑ MCQ Bank' },
-              { id: 'viva', label: '☑ Viva Questions' },
-              { id: 'references', label: '☑ Academic References' },
-              { id: 'quranHadith', label: '☑ Quran & Hadith Citations' },
+              { id: 'cover', label: isBn ? '☑ কভার পেজ যোগ করুন' : '☑ Add Cover Page' },
+              { id: 'toc', label: isBn ? '☑ সূচিপত্র (TOC)' : '☑ Table of Contents' },
+              { id: 'summary', label: isBn ? '☑ সারসংক্ষেপ (Summary)' : '☑ Executive Summary' },
+              { id: 'keyPoints', label: isBn ? '☑ মূল পয়েন্টসমূহ' : '☑ Key Points' },
+              { id: 'diagrams', label: isBn ? '☑ ডায়াগ্রাম ও চার্ট' : '☑ Visual Diagrams' },
+              { id: 'mindMap', label: isBn ? '☑ মাইন্ড ম্যাপ' : '☑ Mind Map' },
+              { id: 'mcq', label: isBn ? '☑ এমসিকিউ প্রশ্ন ব্যাংক' : '☑ MCQ Bank' },
+              { id: 'viva', label: isBn ? '☑ ভাইভা ও মৌখিক প্রশ্ন' : '☑ Viva Questions' },
+              { id: 'references', label: isBn ? '☑ একাডেমিক রেফারেন্স' : '☑ Academic References' },
+              { id: 'quranHadith', label: isBn ? '☑ কুরআন ও হাদীস সাইটেশন' : '☑ Quran & Hadith Citations' },
             ].map((enh) => {
               const active = !!aiEnhancements[enh.id];
               return (
                 <div
                   key={enh.id}
                   onClick={() => toggleEnhancement(enh.id)}
-                  className={`p-3 rounded-2xl border transition cursor-pointer flex items-center justify-between text-xs font-bold ${
+                  className={`p-3.5 rounded-2xl border transition cursor-pointer flex items-center justify-between text-xs font-bold min-h-[48px] touch-manipulation active:scale-95 ${
                     active
                       ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-900 dark:text-blue-200'
                       : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
                   }`}
                 >
-                  <span>{enh.label}</span>
-                  <div className={`w-4 h-4 rounded-md flex items-center justify-center ${
+                  <span className="leading-tight">{enh.label}</span>
+                  <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
                     active ? 'bg-blue-600 text-white' : 'border border-slate-300'
                   }`}>
-                    {active && <Check className="w-3 h-3" />}
+                    {active && <Check className="w-3.5 h-3.5" />}
                   </div>
                 </div>
               );
@@ -636,9 +638,9 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
 
           <button
             onClick={() => setStep(6)}
-            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px]"
+            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px] touch-manipulation active:scale-98"
           >
-            <span>Continue to Customization</span>
+            <span>{isBn ? 'পরবর্তী ধাপ: কাস্টমাইজেশন' : 'Continue to Customization'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -649,34 +651,34 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
         <div className="space-y-4 animate-in fade-in">
           <div className="text-center space-y-1">
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              Step 6: Customization
+              {isBn ? 'ধাপ ৬: ফন্ট, থিম ও সাইজ কাস্টমাইজেশন' : 'Step 6: Customization'}
             </h2>
             <p className="text-xs text-slate-500">
-              Simple mode settings with optional advanced accordion
+              {isBn ? 'ফন্ট সাইজ, থিম প্যালেট ও ল্যাঙ্গুয়েজ সেটিংস' : 'Simple mode settings with optional advanced accordion'}
             </p>
           </div>
 
           <div className={`p-5 rounded-3xl border space-y-4 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
             <h3 className="font-bold text-sm text-blue-600 flex items-center gap-1.5">
               <Sliders className="w-4 h-4" />
-              <span>Simple Mode Settings</span>
+              <span>{isBn ? 'সাধারণ কাস্টমাইজেশন সেটিংস' : 'Simple Mode Settings'}</span>
             </h3>
 
             {/* Font Size */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Font Size:</label>
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">{isBn ? 'ফন্ট সাইজ:' : 'Font Size:'}</label>
               <div className="grid grid-cols-3 gap-2">
                 {(['small', 'standard', 'large'] as const).map((sz) => (
                   <button
                     key={sz}
                     onClick={() => setFontSize(sz)}
-                    className={`py-2 rounded-xl text-xs font-bold border capitalize transition ${
+                    className={`py-2.5 rounded-xl text-xs font-bold border capitalize transition min-h-[44px] touch-manipulation ${
                       fontSize === sz
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                     }`}
                   >
-                    {sz}
+                    {sz === 'small' ? (isBn ? 'ছোট' : 'Small') : sz === 'standard' ? (isBn ? 'মানসম্মত' : 'Standard') : (isBn ? 'বড়' : 'Large')}
                   </button>
                 ))}
               </div>
@@ -684,34 +686,32 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
 
             {/* Theme Palette */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Publication Theme:</label>
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">{isBn ? 'পাবলিকেশন থিম:' : 'Publication Theme:'}</label>
               <select
                 value={themePalette}
                 onChange={(e) => setThemePalette(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs font-medium text-slate-900 dark:text-white"
+                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs font-medium text-slate-900 dark:text-white min-h-[44px]"
               >
-                <option value="Modern Minimalist">Modern Minimalist (Clean Teal & Slate)</option>
-                <option value="Classical Editorial">Classical Editorial (Oxford Serif & Gold)</option>
-                <option value="Islamic Heritage">Islamic Heritage (Emerald & Gold)</option>
-                <option value="Corporate Royal">Corporate Royal (Navy & Sapphire)</option>
-                <option value="IEEE Academic">IEEE Academic (Double-Column Monograph)</option>
+                <option value="Modern Minimalist">{isBn ? 'মডার্ন মিনিমালিস্ট (ক্লিন টিল ও স্লেট)' : 'Modern Minimalist (Clean Teal & Slate)'}</option>
+                <option value="Classical Editorial">{isBn ? 'ক্লাসিক্যাল এডিটরিয়াল (অক্সফোর্ড সেফিপ)' : 'Classical Editorial (Oxford Serif & Gold)'}</option>
+                <option value="Islamic Heritage">{isBn ? 'ইসলামিক হেরিটেজ (এমেরাল্ড ও গোল্ড)' : 'Islamic Heritage (Emerald & Gold)'}</option>
+                <option value="Corporate Royal">{isBn ? 'করপোরেট রয়্যাল (নেভি ও সেফায়ার)' : 'Corporate Royal (Navy & Sapphire)'}</option>
+                <option value="IEEE Academic">{isBn ? 'আইইইই একাডেমিক (ডাবল কলাম মনোগ্রাফ)' : 'IEEE Academic (Double-Column Monograph)'}</option>
               </select>
             </div>
 
             {/* Target Language */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Language:</label>
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">{isBn ? 'আউটপুট ভাষা:' : 'Language:'}</label>
               <select
                 value={targetLang}
                 onChange={(e) => setTargetLang(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs font-medium text-slate-900 dark:text-white"
+                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs font-medium text-slate-900 dark:text-white min-h-[44px]"
               >
-                <option value="Auto-detect">Auto-detect Language</option>
-                <option value="Bengali">Bengali (বাংলা)</option>
+                <option value="Bengali">বাংলা (Bengali)</option>
                 <option value="English">English</option>
-                <option value="Arabic">Arabic (العربية)</option>
-                <option value="Urdu">Urdu (اردو)</option>
-                <option value="Hindi">Hindi (हिन्दी)</option>
+                <option value="Arabic">العربية (Arabic)</option>
+                <option value="Auto-detect">{isBn ? 'অটো-ডিটেক্ট ভাষা' : 'Auto-detect Language'}</option>
               </select>
             </div>
 
@@ -719,43 +719,43 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
             <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between w-full"
+                className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center justify-between w-full p-2 min-h-[44px] touch-manipulation"
               >
-                <span>Advanced Settings (Typography, Columns, Header)</span>
+                <span>{isBn ? 'এডভান্সড সেটিংস (টাইপোগ্রাফি, মার্জিন, হেডার)' : 'Advanced Settings (Typography, Columns, Header)'}</span>
                 <span>{showAdvanced ? '▲' : '▼'}</span>
               </button>
 
               {showAdvanced && (
                 <div className="mt-3 space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-in fade-in">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Page Columns:</label>
+                    <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">{isBn ? 'পেজ কলাম:' : 'Page Columns:'}</label>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setColumnsCount(1)}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-xl border ${
+                        className={`flex-1 py-2 text-xs font-bold rounded-xl border min-h-[44px] touch-manipulation ${
                           columnsCount === 1 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800'
                         }`}
                       >
-                        Single Column
+                        {isBn ? 'একক কলাম (Single Column)' : 'Single Column'}
                       </button>
                       <button
                         onClick={() => setColumnsCount(2)}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-xl border ${
+                        className={`flex-1 py-2 text-xs font-bold rounded-xl border min-h-[44px] touch-manipulation ${
                           columnsCount === 2 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800'
                         }`}
                       >
-                        Double Column (IEEE)
+                        {isBn ? 'দ্বৈত কলাম (Double Column)' : 'Double Column (IEEE)'}
                       </button>
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Header / Footer Text:</label>
+                    <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">{isBn ? 'হেডার / ফুটার টেক্সট:' : 'Header / Footer Text:'}</label>
                     <input
                       type="text"
                       value={headerFooterText}
                       onChange={(e) => setHeaderFooterText(e.target.value)}
-                      className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs"
+                      className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs min-h-[44px]"
                     />
                   </div>
                 </div>
@@ -765,9 +765,9 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
 
           <button
             onClick={() => setStep(7)}
-            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px]"
+            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px] touch-manipulation active:scale-98"
           >
-            <span>Continue to Live Preview</span>
+            <span>{isBn ? 'পরবর্তী ধাপ: লাইভ প্রিভিউ' : 'Continue to Live Preview'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -778,10 +778,10 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
         <div className="space-y-4 animate-in fade-in">
           <div className="text-center space-y-1">
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              Step 7: Live Document Preview
+              {isBn ? 'ধাপ ৭: লাইভ পিডিএফ প্রিভিউ' : 'Step 7: Live Document Preview'}
             </h2>
             <p className="text-xs text-slate-500">
-              Interactive preview before final PDF publication generation
+              {isBn ? 'চূড়ান্ত জেনারেট করার পূর্বে ক্যানভাসে সরাসরি দেখুন' : 'Interactive preview before final PDF publication generation'}
             </p>
           </div>
 
@@ -789,14 +789,14 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
           <div className="flex items-center justify-between p-2 rounded-2xl bg-slate-100 dark:bg-slate-800 text-xs">
             <div className="flex items-center gap-2">
               <Eye className="w-4 h-4 text-blue-600" />
-              <span className="font-bold">Page 1 of 4</span>
+              <span className="font-bold">{isBn ? 'পৃষ্ঠা ১ (মোট ৪)' : 'Page 1 of 4'}</span>
             </div>
             <div className="flex items-center gap-1 font-mono">
-              <button onClick={() => setPreviewZoom(Math.max(80, previewZoom - 10))} className="px-2 py-1 bg-white dark:bg-slate-900 rounded-lg">
+              <button onClick={() => setPreviewZoom(Math.max(80, previewZoom - 10))} className="px-3 py-1.5 bg-white dark:bg-slate-900 rounded-lg min-h-[36px] touch-manipulation">
                 -
               </button>
               <span className="px-2">{previewZoom}%</span>
-              <button onClick={() => setPreviewZoom(Math.min(150, previewZoom + 10))} className="px-2 py-1 bg-white dark:bg-slate-900 rounded-lg">
+              <button onClick={() => setPreviewZoom(Math.min(150, previewZoom + 10))} className="px-3 py-1.5 bg-white dark:bg-slate-900 rounded-lg min-h-[36px] touch-manipulation">
                 +
               </button>
             </div>
@@ -814,29 +814,31 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
 
             <div className="space-y-2">
               <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-800">
-                PUBLICATION DRAFT
+                {isBn ? 'পাবলিকেশন ড্রাফট' : 'PUBLICATION DRAFT'}
               </span>
               <h1 className="text-lg font-extrabold text-slate-900 leading-snug">
-                {topicInput || 'Publication Document Topic'}
+                {topicInput || (isBn ? 'পাবলিকেশন ডকুমেন্টের বিষয়বস্তু' : 'Publication Document Topic')}
               </h1>
               <p className="text-xs text-slate-600">
-                Complete Academic Research Monograph & Study Guide Edition.
+                {isBn ? 'বিশ্ববিদ্যালয় মানসম্পন্ন একাডেমিক মডেল উত্তর ও নির্দেশিকা এডিশন।' : 'Complete Academic Research Monograph & Study Guide Edition.'}
               </p>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-              <p className="font-bold text-blue-900">1. Executive Overview</p>
+              <p className="font-bold text-blue-900">{isBn ? '১. সারসংক্ষেপ ও ভূমিকা' : '1. Executive Overview'}</p>
               <p className="text-[11px] text-slate-600 leading-relaxed">
-                This document synthesizes key theoretical frameworks, university exam answers, and high-yield MCQ practice sets formatted dynamically according to Oxford/Cambridge standards.
+                {isBn
+                  ? 'এই ডকুমেন্টে অক্সফোর্ড এবং কেমব্রিজ পাবলিকেশন স্ট্যান্ডার্ড অনুযায়ী পয়েন্টভিত্তিক বিস্তৃত আলোচনা, রেফারেন্স ও প্রশ্নব্যাংক স্বয়ংক্রিয়ভাবে সাজানো হয়েছে।'
+                  : 'This document synthesizes key theoretical frameworks, university exam answers, and high-yield MCQ practice sets formatted dynamically according to Oxford/Cambridge standards.'}
               </p>
             </div>
           </div>
 
           <button
             onClick={() => setStep(8)}
-            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px]"
+            className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 min-h-[48px] touch-manipulation active:scale-98"
           >
-            <span>Proceed to Final Generation</span>
+            <span>{isBn ? 'চূড়ান্ত ধাপ: জেনারেট করুন' : 'Proceed to Final Generation'}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -852,18 +854,20 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
               </div>
 
               <div className="space-y-1">
-                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">Ready to Generate</h2>
+                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                  {isBn ? 'পাবলিকেশন তৈরি করতে প্রস্তুত' : 'Ready to Generate'}
+                </h2>
                 <p className="text-xs text-slate-500">
-                  Tap below to launch the publication engine
+                  {isBn ? 'নিচের বাটনে ট্যাপ করে এআই পাবলিকেশন ইঞ্জিন চালু করুন' : 'Tap below to launch the publication engine'}
                 </p>
               </div>
 
               <button
                 onClick={handleStartGeneration}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white font-extrabold text-base shadow-xl shadow-blue-500/30 transition transform active:scale-95 flex items-center justify-center gap-2 min-h-[52px]"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white font-extrabold text-base shadow-xl shadow-blue-500/30 transition transform active:scale-95 flex items-center justify-center gap-2 min-h-[52px] touch-manipulation"
               >
                 <Zap className="w-5 h-5 text-amber-300 fill-amber-300" />
-                <span>✨ Generate Publication</span>
+                <span>{isBn ? '✨ পাবলিকেশন পিডিএফ তৈরি করুন' : '✨ Generate Publication'}</span>
               </button>
             </div>
           ) : (
@@ -874,7 +878,7 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
 
               <div className="space-y-2">
                 <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
-                  Creating Your Publication Document...
+                  {isBn ? 'আপনার পাবলিকেশন ফাইল তৈরি হচ্ছে...' : 'Creating Your Publication Document...'}
                 </h3>
                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 font-mono">
                   {generationNotice}
@@ -882,7 +886,7 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
               </div>
 
               {/* Animated Progress Bar */}
-              <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden p-0.5 border">
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-3.5 rounded-full overflow-hidden p-0.5 border">
                 <div
                   className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 h-full rounded-full transition-all duration-500"
                   style={{ width: `${((generationStage + 1) / generationStagesList.length) * 100}%` }}
@@ -890,8 +894,8 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
               </div>
 
               <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                <span>Estimated Time: ~3-5 seconds</span>
-                <span>Stage {generationStage + 1} / 5</span>
+                <span>{isBn ? 'আনুমানিক সময়: ~৩-৫ সেকেন্ড' : 'Estimated Time: ~3-5 seconds'}</span>
+                <span>{isBn ? `ধাপ ${generationStage + 1} / ৫` : `Stage ${generationStage + 1} / 5`}</span>
               </div>
             </div>
           )}
@@ -903,36 +907,38 @@ export const CreateWizard: React.FC<CreateWizardProps> = ({
         <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-3xl p-5 space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl animate-in zoom-in-95">
             <div className="flex justify-between items-center pb-2 border-b">
-              <h3 className="font-extrabold text-base text-slate-900 dark:text-white">All 200+ Template Gallery</h3>
-              <button onClick={() => setShowAllTemplatesModal(false)} className="text-xs font-bold text-slate-400">
-                ✕ Close
+              <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                {isBn ? '২০০+ পাবলিকেশন টেমপ্লেট গ্যালারি' : 'All 200+ Template Gallery'}
+              </h3>
+              <button onClick={() => setShowAllTemplatesModal(false)} className="text-xs font-bold text-slate-400 p-2 min-h-[44px]">
+                ✕ {isBn ? 'বন্ধ' : 'Close'}
               </button>
             </div>
             <p className="text-xs text-slate-500">
-              Select any publication template standard for immediate application.
+              {isBn ? 'যেকোনো টেমপ্লেট নির্বাচন করে দ্রুত আপনার পিডিএফে প্রয়োগ করুন।' : 'Select any publication template standard for immediate application.'}
             </p>
 
             <div className="space-y-2">
               {[
-                'Oxford Academic Press (2026)',
-                'Cambridge Science Monograph',
-                'Harvard Business Review Format',
-                'Islamic Classical Tafsir Manuscript',
-                'Government BCS Exam Paper',
-                'Medical Physiology Journal',
-                'IEEE Double Column Research',
-                'Nature Science Magazine',
-              ].map((name, i) => (
+                { en: 'Oxford Academic Press (2026)', bn: 'অক্সফোর্ড একাডেমিক প্রেস মানদণ্ড' },
+                { en: 'Cambridge Science Monograph', bn: 'কেমব্রিজ সায়েন্স মনোগ্রাফ লেআউট' },
+                { en: 'Harvard Business Review Format', bn: 'হার্ভার্ড বিজনেস রিভিউ ফরম্যাট' },
+                { en: 'Islamic Classical Tafsir Manuscript', bn: 'ইসলামিক ক্লাসিক্যাল তাফসীর কিতাব' },
+                { en: 'Government BCS Exam Paper', bn: 'সরকারি চাকরি ও বিসিএস পরীক্ষা গাইড' },
+                { en: 'Medical Physiology Journal', bn: 'মেডিকেল ও সায়েন্স জার্নাল মানদণ্ড' },
+                { en: 'IEEE Double Column Research', bn: 'আইইইই ডাবল কলাম রিসার্চ পেপার' },
+                { en: 'Nature Science Magazine', bn: 'নেচার সায়েন্স একাডেমি সাময়িকী' },
+              ].map((item, i) => (
                 <div
                   key={i}
                   onClick={() => {
-                    setSelectedTemplate(name.toLowerCase().replace(/ /g, '_'));
+                    setSelectedTemplate(item.en.toLowerCase().replace(/ /g, '_'));
                     setShowAllTemplatesModal(false);
                   }}
-                  className="p-3 rounded-2xl border hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer text-xs font-bold flex justify-between items-center"
+                  className="p-3.5 rounded-2xl border hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer text-xs font-bold flex justify-between items-center min-h-[48px] touch-manipulation"
                 >
-                  <span>{name}</span>
-                  <span className="text-[10px] text-blue-600 font-normal">Select</span>
+                  <span>{isBn ? item.bn : item.en}</span>
+                  <span className="text-[10px] text-blue-600 font-bold px-2 py-1 bg-blue-50 rounded-lg">{isBn ? 'বাছাই করুন' : 'Select'}</span>
                 </div>
               ))}
             </div>

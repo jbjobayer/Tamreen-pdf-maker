@@ -79,14 +79,25 @@ export const CreationHub: React.FC<CreationHubProps> = ({
   const [quickGenerating, setQuickGenerating] = useState<boolean>(false);
   const [quickGenNotice, setQuickGenNotice] = useState<string>('');
 
-  const quickExamplePrompts = [
-    'Create a complete Islamic book on Al Adlu wal Insaf.',
-    'Generate MCQ from uploaded PDF with answer explanations.',
-    'Create Honours answer with references & model diagram.',
-    'Generate University Assignment on Macroeconomics.',
-    'Convert uploaded image into publication grade PDF.',
-    'Generate Research Paper in double-column Oxford format.',
-  ];
+  const isBn = currentLanguage === 'bn';
+
+  const quickExamplePrompts = isBn
+    ? [
+        'আল-আদল ওয়াল ইনসাফ বিষয়ের উপর একটি পূর্ণাঙ্গ ইসলামিক বই তৈরি করুন।',
+        'আপলোডকৃত পিডিএফ থেকে ব্যাখ্যাসহ বহুনির্বাচনী প্রশ্ন ব্যাংক তৈরি করুন।',
+        'বিশ্ববিদ্যালয় অনার্স পরীক্ষার জন্য রেফারেন্স ও ডায়াগ্রাম সহ ১০ নম্বরের উত্তর তৈরি করুন।',
+        'ম্যাক্রোইকোনমিক্স বিষয়ের উপর বিশ্ববিদ্যালয় অ্যাসাইনমেন্ট তৈরি করুন।',
+        'ছবি স্ক্যান করে আন্তর্জাতিক মানদণ্ডের পাবলিকেশন পিডিএফে রূপান্তর করুন।',
+        'অক্সফোর্ড ডাবল-কলাম ফরম্যাটে গবেষণা পত্র ও মনোগ্রাফ তৈরি করুন।',
+      ]
+    : [
+        'Create a complete Islamic book on Al Adlu wal Insaf.',
+        'Generate MCQ from uploaded PDF with answer explanations.',
+        'Create Honours answer with references & model diagram.',
+        'Generate University Assignment on Macroeconomics.',
+        'Convert uploaded image into publication grade PDF.',
+        'Generate Research Paper in double-column Oxford format.',
+      ];
 
   // ---------------------------------------------------------------------------
   // 💬 AI CHAT STATE
@@ -152,60 +163,66 @@ export const CreationHub: React.FC<CreationHubProps> = ({
     }
 
     setQuickGenerating(true);
-    setQuickGenNotice('AI analyzing request & deciding optimal template...');
+    setQuickGenNotice(isBn ? 'এআই অনুরোধ বিশ্লেষণ করছে ও টেমপ্লেট নির্বাচন করছে...' : 'AI analyzing request & deciding optimal template...');
 
     await new Promise((res) => setTimeout(res, 800));
-    setQuickGenNotice('Synthesizing publication layout & typography...');
+    setQuickGenNotice(isBn ? 'লেআউট ও টাইপোগ্রাফি বিন্যাস করা হচ্ছে...' : 'Synthesizing publication layout & typography...');
     await new Promise((res) => setTimeout(res, 800));
-    setQuickGenNotice('Finalizing PDF rendering...');
+    setQuickGenNotice(isBn ? 'পিডিএফ রেন্ডারিং চূড়ান্ত করা হচ্ছে...' : 'Finalizing PDF rendering...');
     await new Promise((res) => setTimeout(res, 600));
 
     // Construct Document
     const generatedDoc: DocumentData = {
       id: 'doc-' + Date.now(),
-      title: quickPrompt.slice(0, 45) || 'AI Quick Generated Document',
-      subtitle: `Publication Edition • ${quickLanguage} • ${new Date().toLocaleDateString()}`,
-      author: 'Tamreen AI Publisher',
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      language: 'en',
+      title: quickPrompt.slice(0, 45) || (isBn ? 'এআই কুইক জেনারেটেড পাবলিকেশন' : 'AI Quick Generated Document'),
+      subtitle: isBn ? `পাবলিকেশন সংস্করণ • তামরীন এআই • ${new Date().toLocaleDateString('bn-BD')}` : `Publication Edition • ${quickLanguage} • ${new Date().toLocaleDateString()}`,
+      author: isBn ? 'তামরীন এআই পাবলিশার' : 'Tamreen AI Publisher',
+      date: new Date().toLocaleDateString(isBn ? 'bn-BD' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      language: isBn ? 'bn' : 'en',
       direction: 'ltr',
       theme: 'Modern Minimalist',
-      primaryFont: 'Inter',
+      primaryFont: 'Noto Sans Bengali',
       accentColor: '#2563EB',
       hasCover: true,
-      documentType: quickPrompt.toLowerCase().includes('islamic')
+      documentType: quickPrompt.toLowerCase().includes('islamic') || quickPrompt.includes('ইসলামিক')
         ? 'Islamic Manuscript'
-        : quickPrompt.toLowerCase().includes('mcq')
+        : quickPrompt.toLowerCase().includes('mcq') || quickPrompt.includes('প্রশ্ন')
         ? 'MCQ Question Bank'
-        : quickPrompt.toLowerCase().includes('honours')
+        : quickPrompt.toLowerCase().includes('honours') || quickPrompt.includes('অনার্স')
         ? 'University Answer Sheet'
         : 'Textbook Chapter',
       sections: [
         {
           id: 'sec-q1',
-          heading: '1. Comprehensive Subject Overview',
+          heading: isBn ? '১. বিষয়বস্তুর বিস্তৃত আলোচনা ও মূল তত্ত্ব' : '1. Comprehensive Subject Overview',
           level: 1,
-          content: quickPrompt.trim()
-            ? `This publication document was synthesized automatically by AI for: "${quickPrompt}". It integrates structured headings, clear analytical explanations, and reference callouts.`
-            : 'Automated synthesis generated from uploaded content source.',
+          content: isBn
+            ? `এই পাবলিকেশন ফাইলটি এআই দ্বারা স্বয়ংক্রিয়ভাবে সাজানো হয়েছে: "${quickPrompt}"। এতে রয়েছে সুবিন্যস্ত উপশিরোনাম, গভীর তথ্যভিত্তিক ব্যাখ্যা এবং আন্তর্জাতিক মানদণ্ডের সাইটেশন।`
+            : `This publication document was synthesized automatically by AI for: "${quickPrompt}". It integrates structured headings, clear analytical explanations, and reference callouts.`,
           callout: {
             type: 'key_takeaway',
-            title: 'Key Academic Principle',
-            text: 'Systematic study and concise note structures improve retention rates by up to 64% during final review examinations.',
+            title: isBn ? 'মূল একাডেমিক নীতি' : 'Key Academic Principle',
+            text: isBn ? 'পয়েন্টভিত্তিক গঠনমূলক আলোচনা ও সঠিক রেফারেন্স ব্যবহারে উত্তরপত্রের মান বহুগুণ বৃদ্ধি পায়।' : 'Systematic study and concise note structures improve retention rates by up to 64% during final review examinations.',
           },
         },
         {
           id: 'sec-q2',
-          heading: '2. High-Yield Examination Questions & Model Answers',
+          heading: isBn ? '২. গুরুত্বপূর্ণ পরীক্ষা ভিত্তিক প্রশ্ন ও মডেল উত্তর' : '2. High-Yield Examination Questions & Model Answers',
           level: 1,
-          content:
-            'Q1: Explain the fundamental mechanisms governing this topic.\n\nAnswer: The mechanism relies on three core tenets: (a) Structural symmetry, (b) Quantitative balance, and (c) Contextual application in problem solving.',
+          content: isBn
+            ? 'প্রশ্ন ১: সংশ্লিষ্ট বিষয়বস্তুর মূল প্রক্রিয়া ও গুরুত্ব ব্যাখ্যা করুন।\n\nউত্তর: এই বিষয়টি ৩টি প্রধান স্তম্ভের উপর নির্ভরশীল: (ক) কাঠামোগত সামঞ্জস্য, (খ) গাণিতিক ও তথ্যভিত্তিক ভারসাম্য, এবং (গ) বাস্তবে এর সঠিক প্রয়োগ।'
+            : 'Q1: Explain the fundamental mechanisms governing this topic.\n\nAnswer: The mechanism relies on three core tenets: (a) Structural symmetry, (b) Quantitative balance, and (c) Contextual application in problem solving.',
         },
       ],
-      references: [
-        'Oxford University Academic Press, 2026 Edition, Chapter 4.',
-        'National Education Curriculum & Research Monograph Vol. 12.',
-      ],
+      references: isBn
+        ? [
+            'অক্সফোর্ড ইউনিভার্সিটি একাডেমি প্রেস, ২০২৬ এডিশন, অধ্যায় ৪।',
+            'জাতীয় শিক্ষাক্রম ও পাঠ্যপুস্তক বোর্ড গবেষণা মোনোগ্রাফ খণ্ড ১২।',
+          ]
+        : [
+            'Oxford University Academic Press, 2026 Edition, Chapter 4.',
+            'National Education Curriculum & Research Monograph Vol. 12.',
+          ],
     };
 
     setQuickGenerating(false);

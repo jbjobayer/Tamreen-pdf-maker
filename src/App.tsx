@@ -24,7 +24,7 @@ export default function App() {
   const [isViewingCanvas, setIsViewingCanvas] = useState<boolean>(false);
 
   // Language & Theme state
-  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('en');
+  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('bn');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
   // Documents State
