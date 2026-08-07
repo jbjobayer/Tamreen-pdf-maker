@@ -1,40 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  FileText,
   Type as TypeIcon,
   Columns,
-  Palette,
-  BookOpen,
+  Sparkles,
   Plus,
   Trash2,
-  Sparkles,
-  Layers,
-  ChevronLeft,
-  ChevronRight,
   MoveUp,
   MoveDown,
   Quote,
-  Table as TableIcon,
-  AlignLeft,
-  AlignRight,
-  Sliders,
   Check,
-  Globe,
   Download,
   Printer,
   Eye,
   Edit3,
-  ZoomIn,
-  ZoomOut,
+  Sliders,
   Maximize2,
-  LayoutGrid,
 } from 'lucide-react';
-import { DocumentData, DocumentSection, LayoutSettings, LanguageCode, CustomizationSettings } from '../types';
+import { DocumentData, DocumentSection, LayoutSettings, CustomizationSettings } from '../types';
 import { TemplateGalleryModal } from './TemplateGalleryModal';
 import { PremiumTemplate } from '../data/templateLibrary';
 import { SmartLayoutEngine, SmartLayoutConfig } from './SmartLayoutEngine';
 import { FormattedContent } from './FormattedContent';
-import { generateDownloadablePDF, triggerPrintDialog, exportAsDocxOrText } from './PDFExporter';
+import { generateDownloadablePDF, triggerPrintDialog } from './PDFExporter';
 
 interface StudioCanvasProps {
   document: DocumentData;
@@ -49,10 +36,13 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
 }) => {
   // Mode state: 'paper' (Word A4 Preview), 'edit' (Text Editor), 'settings' (Tools)
   const [viewMode, setViewMode] = useState<'paper' | 'edit' | 'settings'>('paper');
-  const [activeTab, setActiveTab] = useState<'smart' | 'layout' | 'typography' | 'cover' | 'sections'>('smart');
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState<boolean>(false);
-  const [zoomScale, setZoomScale] = useState<number>(0.9); // Default mobile-friendly scale
   const [isExporting, setIsExporting] = useState<boolean>(false);
+
+  // Auto-Scale Logic for Mobile Screen Fit
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [autoScale, setAutoScale] = useState<number>(1);
+  const [userZoom, setUserZoom] = useState<number | null>(null); // null means auto-fit
 
   // Smart Layout Engine Config State
   const [smartLayoutConfig, setSmartLayoutConfig] = useState<SmartLayoutConfig>({
@@ -81,7 +71,28 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
   });
 
   const isRTL = document.direction === 'rtl' || document.language === 'ar';
-  const isBn = document.language === 'bn' || true; // Default Bengali experience
+
+  // Calculate Auto Scale on window resize or view change
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.clientWidth;
+        const targetWidth = 794; // A4 width @ 96 DPI
+        if (containerWidth < targetWidth + 24) {
+          const scale = Math.max(0.32, (containerWidth - 24) / targetWidth);
+          setAutoScale(scale);
+        } else {
+          setAutoScale(1);
+        }
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [viewMode]);
+
+  const currentScale = userZoom !== null ? userZoom : autoScale;
 
   // Font Helper Class
   const getFontFamilyClass = (fontName: string) => {
@@ -198,47 +209,57 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
     }
   };
 
+  // Page Count calculation for scaled container height
+  const totalPages = (document.hasCover ? 1 : 0) + (document.tableOfContents && document.tableOfContents.length > 0 ? 1 : 0) + 1;
+  const unscaledPageHeight = 1123; // 297mm @ 96dpi
+  const pageGap = 40;
+  const totalUnscaledHeight = totalPages * unscaledPageHeight + (totalPages - 1) * pageGap;
+  const scaledContainerHeight = Math.ceil(totalUnscaledHeight * currentScale);
+
   return (
-    <div className="flex flex-col min-h-screen bg-slate-200/80 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
-      {/* ----------------- WORD RIBBON TOOLBAR ----------------- */}
-      <div className="no-print sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm p-2 sm:p-3">
-        <div className="max-w-7xl mx-auto flex flex-col gap-2.5">
-          {/* Top Row: Mode Toggles & Action Buttons */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Mode Switcher Buttons */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200 dark:border-slate-700">
+    <div className="flex flex-col min-h-screen neu-bg text-slate-800 dark:text-slate-100">
+      {/* ----------------- NEUMORPHIC TOP TOOLBAR ----------------- */}
+      <div className="no-print sticky top-0 z-30 neu-flat p-2.5 sm:p-4 rounded-b-3xl border-b border-white/60 dark:border-slate-800/60 shadow-md">
+        <div className="max-w-6xl mx-auto flex flex-col gap-3">
+          {/* Row 1: Mode Switcher & Primary Action Buttons */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            {/* Neumorphic Mode Tabs */}
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl neu-pressed">
               <button
                 onClick={() => setViewMode('paper')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 min-h-[38px] touch-manipulation ${
+                className={`px-3 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 touch-manipulation ${
                   viewMode === 'paper'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                    ? 'neu-button text-blue-600 dark:text-blue-400 font-extrabold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Eye className="w-4 h-4 text-amber-300" />
-                <span>ওয়ার্ড পেপার ভিউ</span>
+                <Eye className="w-4 h-4 text-amber-500" />
+                <span>A4 পেপার ভিউ</span>
               </button>
+
               <button
                 onClick={() => setViewMode('edit')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 min-h-[38px] touch-manipulation ${
+                className={`px-3 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 touch-manipulation ${
                   viewMode === 'edit'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                    ? 'neu-button text-blue-600 dark:text-blue-400 font-extrabold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Edit3 className="w-4 h-4" />
+                <Edit3 className="w-4 h-4 text-blue-500" />
                 <span>টেক্সট এডিটর</span>
               </button>
+
               <button
                 onClick={() => setViewMode('settings')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 min-h-[38px] touch-manipulation ${
+                className={`px-3 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 touch-manipulation ${
                   viewMode === 'settings'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                    ? 'neu-button text-blue-600 dark:text-blue-400 font-extrabold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Sliders className="w-4 h-4" />
-                <span>লেআউট টুলস</span>
+                <Sliders className="w-4 h-4 text-purple-500" />
+                <span className="hidden sm:inline">লেআউট ও ডিজাইন</span>
+                <span className="sm:hidden">ডিজাইন</span>
               </button>
             </div>
 
@@ -246,16 +267,16 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsTemplateModalOpen(true)}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 min-h-[40px]"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold neu-button text-purple-700 dark:text-purple-300"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>টুল ও টেমপ্লেট গ্যালারি</span>
+                <span>টেমপ্লেট গ্যালারি</span>
               </button>
 
               <button
                 onClick={handleDownloadPDFClick}
                 disabled={isExporting}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/20 transition min-h-[40px] touch-manipulation active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black neu-primary-btn active:scale-95 disabled:opacity-50"
               >
                 <Download className="w-4 h-4" />
                 <span>{isExporting ? 'তৈরি হচ্ছে...' : 'ডাউনলোড পিডিএফ'}</span>
@@ -263,19 +284,19 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
 
               <button
                 onClick={triggerPrintDialog}
-                className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition min-h-[40px] min-w-[40px] flex items-center justify-center"
-                title="প্রিন্ট অথবা সেভ"
+                className="p-2.5 rounded-2xl neu-button text-slate-700 dark:text-slate-200 flex items-center justify-center min-w-[40px]"
+                title="প্রিন্ট করুন"
               >
                 <Printer className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Bottom Ribbon: Formatting Controls */}
-          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+          {/* Row 2: Formatting Strip (Neumorphic Inset Inputs & Buttons) */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-200/50 dark:border-slate-800/50 text-xs">
             {/* Font Family Selector */}
-            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700">
-              <TypeIcon className="w-3.5 h-3.5 text-blue-600" />
+            <div className="flex items-center gap-1.5 neu-pressed px-3 py-1.5 rounded-2xl">
+              <TypeIcon className="w-3.5 h-3.5 text-blue-600 shrink-0" />
               <select
                 value={layoutSettings.primaryFont}
                 onChange={(e) => {
@@ -283,77 +304,83 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   setLayoutSettings((prev) => ({ ...prev, primaryFont: f }));
                   setDocument((prev) => ({ ...prev, primaryFont: f }));
                 }}
-                className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-1"
               >
-                <option value="Noto Serif Bengali">নোটো সেফিপ (Noto Serif Bengali)</option>
+                <option value="Noto Serif Bengali">নোটো সেফিপ (Noto Serif)</option>
                 <option value="Hind Siliguri">হিন্দ শিলিগুড়ি (Hind Siliguri)</option>
                 <option value="Tiro Bangla">তিরো বাংলা (Tiro Bangla)</option>
-                <option value="Inter">ইন্টার (Inter Sans)</option>
                 <option value="Playfair Display">প্লেফেয়ার (Playfair Display)</option>
               </select>
             </div>
 
-            {/* Font Size Control */}
-            <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 font-mono">
-              <span className="text-[11px] font-bold text-slate-500">ফন্ট সাইজ:</span>
+            {/* Font Size Selector */}
+            <div className="flex items-center gap-1.5 neu-pressed px-2.5 py-1 rounded-2xl">
+              <span className="text-[11px] font-extrabold text-slate-500">সাইজ:</span>
               <button
                 onClick={() =>
                   setLayoutSettings((prev) => ({ ...prev, fontSize: Math.max(12, prev.fontSize - 1) }))
                 }
-                className="px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 font-bold"
+                className="w-6 h-6 rounded-lg neu-button flex items-center justify-center font-black text-slate-700 dark:text-slate-200"
               >
                 -
               </button>
-              <span className="font-bold text-blue-600 px-1">{layoutSettings.fontSize}pt</span>
+              <span className="font-extrabold text-blue-600 dark:text-blue-400 min-w-[28px] text-center">
+                {layoutSettings.fontSize}pt
+              </span>
               <button
                 onClick={() =>
                   setLayoutSettings((prev) => ({ ...prev, fontSize: Math.min(24, prev.fontSize + 1) }))
                 }
-                className="px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 font-bold"
+                className="w-6 h-6 rounded-lg neu-button flex items-center justify-center font-black text-slate-700 dark:text-slate-200"
               >
                 +
               </button>
             </div>
 
-            {/* Column Layout Selector */}
-            <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700">
-              <Columns className="w-3.5 h-3.5 text-blue-600" />
+            {/* Column Layout Switcher */}
+            <div className="flex items-center gap-1 neu-pressed p-1 rounded-2xl">
               <button
                 onClick={() => setLayoutSettings((prev) => ({ ...prev, columnCount: 1 }))}
-                className={`px-2 py-0.5 rounded font-bold transition ${
-                  layoutSettings.columnCount === 1 ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300'
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold transition ${
+                  layoutSettings.columnCount === 1 ? 'neu-button text-blue-600 font-extrabold' : 'text-slate-500'
                 }`}
               >
                 একক কলাম
               </button>
               <button
                 onClick={() => setLayoutSettings((prev) => ({ ...prev, columnCount: 2 }))}
-                className={`px-2 py-0.5 rounded font-bold transition ${
-                  layoutSettings.columnCount === 2 ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300'
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold transition ${
+                  layoutSettings.columnCount === 2 ? 'neu-button text-blue-600 font-extrabold' : 'text-slate-500'
                 }`}
               >
                 দ্বৈত কলাম (IEEE)
               </button>
             </div>
 
-            {/* Zoom / Scale factor for Mobile view */}
-            <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 ml-auto">
-              <Maximize2 className="w-3.5 h-3.5 text-slate-400" />
+            {/* Scale / Zoom Control for Mobile Screen Fit */}
+            <div className="flex items-center gap-1 neu-pressed p-1 rounded-2xl ml-auto">
               <button
-                onClick={() => setZoomScale(0.65)}
-                className={`px-2 py-0.5 rounded font-bold text-[11px] ${zoomScale === 0.65 ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300'}`}
+                onClick={() => setUserZoom(null)}
+                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition ${
+                  userZoom === null ? 'neu-button text-blue-600 font-extrabold' : 'text-slate-500'
+                }`}
+                title="স্ক্রিনে সম্পূর্ণ পেপার ফিট করুন"
               >
-                মোবাইল ফিট
+                মোবাইল ফিট ({(autoScale * 100).toFixed(0)}%)
               </button>
               <button
-                onClick={() => setZoomScale(0.85)}
-                className={`px-2 py-0.5 rounded font-bold text-[11px] ${zoomScale === 0.85 ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300'}`}
+                onClick={() => setUserZoom(0.85)}
+                className={`px-2 py-1 rounded-xl text-[11px] font-bold transition ${
+                  userZoom === 0.85 ? 'neu-button text-blue-600 font-extrabold' : 'text-slate-500'
+                }`}
               >
                 ৮৫%
               </button>
               <button
-                onClick={() => setZoomScale(1.0)}
-                className={`px-2 py-0.5 rounded font-bold text-[11px] ${zoomScale === 1.0 ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300'}`}
+                onClick={() => setUserZoom(1.0)}
+                className={`px-2 py-1 rounded-xl text-[11px] font-bold transition ${
+                  userZoom === 1.0 ? 'neu-button text-blue-600 font-extrabold' : 'text-slate-500'
+                }`}
               >
                 ১০০%
               </button>
@@ -363,322 +390,336 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
       </div>
 
       {/* ----------------- MAIN DOCUMENT STAGE ----------------- */}
-      <div className="flex-1 p-3 sm:p-6 overflow-y-auto flex flex-col items-center">
-        {/* VIEW 1: WORD A4 PAPER VIEW */}
+      <div className="flex-1 p-2 sm:p-6 overflow-y-auto flex flex-col items-center">
+        {/* VIEW 1: A4 WORD PAPER VIEW (MOBILE SCALED) */}
         {viewMode === 'paper' && (
-          <div className="w-full flex flex-col items-center gap-8 py-4">
-            {/* Document Title Banner */}
-            <div className="no-print max-w-[794px] w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 font-mono">
-                  {document.documentType} • A4 WORD PAPER CANVAS
+          <div className="w-full flex flex-col items-center gap-6 py-2">
+            {/* Neumorphic Document Info Card */}
+            <div className="no-print w-full max-w-2xl neu-card p-4 rounded-3xl flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                  {document.documentType || 'A4 PUBLICATION'} • A4 WORD PAPER CANVAS
                 </span>
-                <h2 className="font-extrabold text-blue-900 dark:text-blue-100 text-base sm:text-lg">
+                <h2 className="font-black text-slate-900 dark:text-white text-sm sm:text-base line-clamp-1">
                   {document.title}
                 </h2>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleDownloadPDFClick}
-                  className="px-3 py-1.5 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center gap-1 shadow-sm"
+                  disabled={isExporting}
+                  className="px-3.5 py-1.5 rounded-xl neu-primary-btn text-xs font-black flex items-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>ডাউনলোড করুন</span>
+                  <span>{isExporting ? 'তৈরি হচ্ছে...' : 'ডাউনলোড'}</span>
                 </button>
               </div>
             </div>
 
-            {/* A4 Responsive Container with scale styling for Mobile */}
-            <div
-              className="a4-responsive-wrapper transition-all duration-300"
-              style={{
-                transform: `scale(${zoomScale})`,
-                transformOrigin: 'top center',
-              }}
-            >
-              <div className="flex flex-col gap-10 items-center">
-                {/* ----------------- PAGE 1: COVER PAGE ----------------- */}
-                {document.hasCover && (
-                  <div
-                    id="pdf-cover-page"
-                    className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between overflow-hidden relative`}
-                    style={{ direction: isRTL ? 'rtl' : 'ltr' }}
-                  >
-                    {/* Decorative Header Border */}
+            {/* Dynamic Scaled Container Wrapper - 100% Mobile Screen Fit without cutoff */}
+            <div ref={containerRef} className="w-full flex justify-center items-center overflow-x-hidden py-2">
+              <div
+                style={{
+                  width: `${794 * currentScale}px`,
+                  height: `${scaledContainerHeight}px`,
+                  position: 'relative',
+                }}
+                className="transition-all duration-200"
+              >
+                <div
+                  style={{
+                    width: '794px',
+                    transform: `scale(${currentScale})`,
+                    transformOrigin: 'top left',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                  }}
+                  className="flex flex-col gap-10 items-center"
+                >
+                  {/* ----------------- PAGE 1: COVER PAGE ----------------- */}
+                  {document.hasCover && (
                     <div
-                      className="absolute top-0 left-0 right-0 h-3"
-                      style={{ backgroundColor: layoutSettings.accentColor }}
-                    />
-
-                    {/* Top Publisher Brand */}
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-6 pt-2">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm"
-                          style={{ backgroundColor: layoutSettings.accentColor }}
-                        >
-                          {document.title.charAt(0) || 'P'}
-                        </div>
-                        <div>
-                          <h4 className="font-extrabold text-xs uppercase tracking-widest text-slate-800">
-                            {document.organization || 'তামরীন এআই পাবলিকেশন স্টুডিও'}
-                          </h4>
-                          <p className="text-[11px] text-slate-500">{document.date}</p>
-                        </div>
-                      </div>
-
-                      <span
-                        className="text-[10px] font-bold font-mono tracking-widest px-3 py-1 rounded-full text-white uppercase"
-                        style={{ backgroundColor: layoutSettings.accentColor }}
-                      >
-                        {document.coverData?.badgeText || 'PUBLICATION GRADE EDITION'}
-                      </span>
-                    </div>
-
-                    {/* Cover Center Content */}
-                    <div className="my-12 space-y-6">
-                      <h1
-                        className="font-extrabold text-3xl md:text-5xl leading-snug tracking-tight"
-                        style={{ color: layoutSettings.accentColor }}
-                      >
-                        {document.coverData?.coverTitle || document.title}
-                      </h1>
-
-                      {(document.coverData?.coverSubtitle || document.subtitle) && (
-                        <p className="text-lg md:text-xl text-slate-600 font-serif italic max-w-2xl leading-relaxed">
-                          {document.coverData?.coverSubtitle || document.subtitle}
-                        </p>
-                      )}
-
+                      id="pdf-cover-page"
+                      className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between overflow-hidden relative shadow-2xl rounded-sm`}
+                      style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+                    >
+                      {/* Decorative Header Border */}
                       <div
-                        className="w-20 h-1.5 rounded-full my-6"
+                        className="absolute top-0 left-0 right-0 h-3.5"
                         style={{ backgroundColor: layoutSettings.accentColor }}
                       />
 
-                      {/* Abstract / Overview Callout Box */}
-                      <div
-                        className="p-6 bg-slate-50/90 border-l-4 rounded-r-2xl my-6 shadow-sm"
-                        style={{ borderColor: layoutSettings.accentColor }}
-                      >
-                        <span className="text-xs uppercase font-extrabold tracking-widest text-slate-500 block mb-1">
-                          সারসংক্ষেপ ও ভূমিকা (Executive Overview)
-                        </span>
-                        <p className="text-sm text-slate-700 leading-relaxed italic">
-                          {document.coverData?.abstract ||
-                            'এই ডকুমেন্টে বিস্তারিত তত্ত্বীয় আলোচনা, পরীক্ষাভিত্তিক প্রশ্নোত্তর ও আন্তর্জাতিক মানদণ্ডের সাইটেশন সুবিন্যস্তভাবে সাজানো হয়েছে।'}
-                        </p>
-                      </div>
-                    </div>
+                      {/* Top Publisher Brand */}
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-6 pt-2">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-extrabold text-xl shadow-md"
+                            style={{ backgroundColor: layoutSettings.accentColor }}
+                          >
+                            {document.title.charAt(0) || 'P'}
+                          </div>
+                          <div>
+                            <h4 className="font-extrabold text-xs uppercase tracking-widest text-slate-900">
+                              {document.organization || 'তামরীন এআই পাবলিকেশন স্টুডিও'}
+                            </h4>
+                            <p className="text-[11px] text-slate-500">{document.date}</p>
+                          </div>
+                        </div>
 
-                    {/* Cover Footer */}
-                    <div className="border-t border-slate-200 pt-6 flex items-end justify-between text-xs text-slate-600">
-                      <div>
-                        <p className="font-bold text-slate-900 text-sm">{document.author || 'তামরীন এআই পাবলিশার'}</p>
-                        <p className="text-slate-500">{document.organization || 'জাতীয় শিক্ষাক্রম ও গবেষণা বোর্ড'}</p>
-                      </div>
-                      <div className="text-right font-mono text-[11px]">
-                        <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-slate-700 font-bold">
-                          A4 PRINT FORMAT
+                        <span
+                          className="text-[10px] font-black tracking-widest px-3 py-1 rounded-full text-white uppercase"
+                          style={{ backgroundColor: layoutSettings.accentColor }}
+                        >
+                          {document.coverData?.badgeText || 'PUBLICATION GRADE EDITION'}
                         </span>
                       </div>
-                    </div>
-                  </div>
-                )}
 
-                {/* ----------------- PAGE 2: TABLE OF CONTENTS & SUMMARY ----------------- */}
-                {document.tableOfContents && document.tableOfContents.length > 0 && (
-                  <div
-                    className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative`}
-                    style={{ direction: isRTL ? 'rtl' : 'ltr' }}
-                  >
-                    {/* Header */}
-                    <div className="border-b border-slate-200 pb-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-                      <span>{layoutSettings.headerText}</span>
-                      <span>পৃষ্ঠা ২</span>
-                    </div>
-
-                    {/* TOC Body */}
-                    <div className="my-8 flex-1 space-y-6">
-                      <div className="border-b-2 border-slate-900 pb-3">
-                        <h2
-                          className="font-extrabold text-2xl tracking-tight"
+                      {/* Cover Center Content */}
+                      <div className="my-10 space-y-6">
+                        <h1
+                          className="font-extrabold text-3xl md:text-5xl leading-snug tracking-tight"
                           style={{ color: layoutSettings.accentColor }}
                         >
-                          সূচিপত্র ও বিষয়সূচি (Table of Contents)
-                        </h2>
+                          {document.coverData?.coverTitle || document.title}
+                        </h1>
+
+                        {(document.coverData?.coverSubtitle || document.subtitle) && (
+                          <p className="text-lg md:text-xl text-slate-600 font-serif italic max-w-2xl leading-relaxed">
+                            {document.coverData?.coverSubtitle || document.subtitle}
+                          </p>
+                        )}
+
+                        <div
+                          className="w-20 h-1.5 rounded-full my-6"
+                          style={{ backgroundColor: layoutSettings.accentColor }}
+                        />
+
+                        {/* Abstract / Overview Callout Box */}
+                        <div
+                          className="p-6 bg-slate-50/90 border-l-4 rounded-r-2xl my-6 shadow-sm"
+                          style={{ borderColor: layoutSettings.accentColor }}
+                        >
+                          <span className="text-xs uppercase font-extrabold tracking-widest text-slate-500 block mb-1">
+                            সারসংক্ষেপ ও ভূমিকা (Executive Overview)
+                          </span>
+                          <p className="text-sm text-slate-700 leading-relaxed italic">
+                            {document.coverData?.abstract ||
+                              'এই ডকুমেন্টে বিস্তারিত তত্ত্বীয় আলোচনা, পরীক্ষাভিত্তিক প্রশ্নোত্তর ও আন্তর্জাতিক মানদণ্ডের সাইটেশন সুবিন্যস্তভাবে সাজানো হয়েছে।'}
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="space-y-4">
-                        {document.tableOfContents.map((item, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-baseline justify-between gap-4 border-b border-dotted border-slate-300 pb-2.5"
-                          >
-                            <span className="font-bold text-sm text-slate-800">{item.title}</span>
-                            <span className="font-mono text-xs text-slate-500">পৃষ্ঠা {item.page}</span>
-                          </div>
-                        ))}
+                      {/* Cover Footer */}
+                      <div className="border-t border-slate-200 pt-6 flex items-end justify-between text-xs text-slate-600">
+                        <div>
+                          <p className="font-extrabold text-slate-900 text-sm">{document.author || 'তামরীন এআই পাবলিশার'}</p>
+                          <p className="text-slate-500">{document.organization || 'জাতীয় শিক্ষাক্রম ও গবেষণা বোর্ড'}</p>
+                        </div>
+                        <div className="text-right font-mono text-[11px]">
+                          <span className="px-3 py-1 bg-slate-100 rounded-lg text-slate-800 font-bold">
+                            A4 PRINT FORMAT
+                          </span>
+                        </div>
                       </div>
+                    </div>
+                  )}
+
+                  {/* ----------------- PAGE 2: TABLE OF CONTENTS ----------------- */}
+                  {document.tableOfContents && document.tableOfContents.length > 0 && (
+                    <div
+                      className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative shadow-2xl rounded-sm`}
+                      style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+                    >
+                      {/* Header */}
+                      <div className="border-b border-slate-200 pb-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+                        <span>{layoutSettings.headerText}</span>
+                        <span>পৃষ্ঠা ২</span>
+                      </div>
+
+                      {/* TOC Body */}
+                      <div className="my-8 flex-1 space-y-6">
+                        <div className="border-b-2 border-slate-900 pb-3">
+                          <h2
+                            className="font-extrabold text-2xl tracking-tight"
+                            style={{ color: layoutSettings.accentColor }}
+                          >
+                            সূচিপত্র ও বিষয়সূচি (Table of Contents)
+                          </h2>
+                        </div>
+
+                        <div className="space-y-4">
+                          {document.tableOfContents.map((item, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-baseline justify-between gap-4 border-b border-dotted border-slate-300 pb-2.5"
+                            >
+                              <span className="font-bold text-sm text-slate-800">{item.title}</span>
+                              <span className="font-mono text-xs text-slate-500">পৃষ্ঠা {item.page}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="border-t border-slate-200 pt-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase">
+                        <span>{layoutSettings.footerText}</span>
+                        <span>তামরীন অফিশিয়াল এডিশন</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ----------------- PAGE 3+: CONTENT BODY (A4 CANVAS) ----------------- */}
+                  <div
+                    className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative shadow-2xl rounded-sm`}
+                    style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+                  >
+                    {/* Running Header */}
+                    <div className="border-b border-slate-200 pb-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+                      <span>{document.title}</span>
+                      <span>A4 PAPER CANVAS</span>
+                    </div>
+
+                    {/* Body Content Sections */}
+                    <div
+                      className={`my-8 flex-1 space-y-8 ${
+                        layoutSettings.columnCount === 2 ? 'columns-1 md:columns-2 gap-8' : 'space-y-8'
+                      }`}
+                    >
+                      {document.sections.map((sec) => (
+                        <div
+                          key={sec.id}
+                          className="break-inside-avoid space-y-4 p-5 rounded-2xl bg-white border border-slate-100 shadow-sm relative group"
+                        >
+                          {/* Section Heading */}
+                          <div className="border-b border-slate-100 pb-2 flex items-center justify-between">
+                            <h2
+                              className="font-extrabold text-xl md:text-2xl tracking-tight leading-snug"
+                              style={{ color: layoutSettings.accentColor }}
+                            >
+                              {sec.heading}
+                            </h2>
+                            <button
+                              onClick={() => onOpenAIAssistantForSection(sec.id, sec.content)}
+                              className="no-print opacity-80 hover:opacity-100 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-bold flex items-center gap-1 transition"
+                            >
+                              <Sparkles className="w-3 h-3 text-amber-500" />
+                              <span>এআই এডিট</span>
+                            </button>
+                          </div>
+
+                          {/* Formatted Content Rendering */}
+                          <div
+                            style={{
+                              fontSize: `${layoutSettings.fontSize}px`,
+                              lineHeight: layoutSettings.lineHeight,
+                            }}
+                          >
+                            <FormattedContent
+                              content={sec.content}
+                              accentColor={layoutSettings.accentColor}
+                            />
+                          </div>
+
+                          {/* Callout Box */}
+                          {sec.callout && (
+                            <div
+                              className="p-4 rounded-xl bg-slate-50 border-l-4 my-4 shadow-sm"
+                              style={{ borderColor: layoutSettings.accentColor }}
+                            >
+                              {sec.callout.title && (
+                                <div className="flex items-center gap-2 mb-1 text-xs font-bold uppercase tracking-wider text-slate-700">
+                                  <Quote className="w-3.5 h-3.5 text-blue-600" />
+                                  <span>{sec.callout.title}</span>
+                                </div>
+                              )}
+                              <p className="text-xs text-slate-800 leading-relaxed font-serif italic">
+                                {sec.callout.text}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* MCQ Questions Rendering */}
+                          {sec.mcqs && sec.mcqs.length > 0 && (
+                            <div className="my-6 space-y-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200">
+                              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                                <span className="text-xs font-bold uppercase tracking-widest text-slate-700 flex items-center gap-2">
+                                  <Check className="w-4 h-4 text-emerald-600" />
+                                  <span>বহুনির্বাচনী প্রশ্ন ব্যাংক ({sec.mcqs.length}টি প্রশ্ন)</span>
+                                </span>
+                              </div>
+
+                              <div className="space-y-4">
+                                {sec.mcqs.map((q, qIdx) => (
+                                  <div key={q.id || qIdx} className="p-4 bg-white rounded-xl border border-slate-200 space-y-3 shadow-sm">
+                                    <h4 className="font-bold text-sm text-slate-900 leading-snug">
+                                      <span className="text-blue-600 font-extrabold mr-1.5">
+                                        প্রশ্ন {q.questionNumber || qIdx + 1}.
+                                      </span>
+                                      {q.question}
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                      {q.options.map((opt) => {
+                                        const isCorrect = opt.key === q.correctAnswer;
+                                        return (
+                                          <div
+                                            key={opt.key}
+                                            className={`p-2.5 rounded-lg border flex items-start gap-2.5 transition ${
+                                              isCorrect
+                                                ? 'bg-emerald-50 border-emerald-400 text-emerald-950 font-semibold'
+                                                : 'bg-slate-50 border-slate-200 text-slate-700'
+                                            }`}
+                                          >
+                                            <span
+                                              className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 ${
+                                                isCorrect ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
+                                              }`}
+                                            >
+                                              {opt.key}
+                                            </span>
+                                            <span className="text-xs pt-0.5">{opt.text}</span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+
+                                    {q.explanation && (
+                                      <div className="mt-2 p-3 bg-blue-50/60 border border-blue-100 rounded-lg text-xs space-y-1">
+                                        <span className="font-bold text-blue-900 text-[11px] uppercase tracking-wider block">
+                                          উত্তরের ব্যাখ্যা:
+                                        </span>
+                                        <p className="text-blue-950 leading-relaxed text-[11px]">{q.explanation}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                      {/* Document References */}
+                      {document.references && document.references.length > 0 && (
+                        <div className="pt-6 border-t-2 border-slate-200 space-y-2">
+                          <h4 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider">
+                            রেফারেন্স ও তথ্যসূত্র (References)
+                          </h4>
+                          <ol className="list-decimal pl-5 text-xs text-slate-600 space-y-1">
+                            {document.references.map((ref, rIdx) => (
+                              <li key={rIdx}>{ref}</li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
                     </div>
 
                     {/* Footer */}
                     <div className="border-t border-slate-200 pt-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase">
                       <span>{layoutSettings.footerText}</span>
-                      <span>তামরীন অফিশিয়াল এডিশন</span>
+                      <span>পৃষ্ঠা ৩</span>
                     </div>
-                  </div>
-                )}
-
-                {/* ----------------- PAGE 3+: CONTENT BODY (WORD A4 CANVAS) ----------------- */}
-                <div
-                  className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative`}
-                  style={{ direction: isRTL ? 'rtl' : 'ltr' }}
-                >
-                  {/* Running Header */}
-                  <div className="border-b border-slate-200 pb-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-                    <span>{document.title}</span>
-                    <span>A4 PAPER CANVAS</span>
-                  </div>
-
-                  {/* Body Content Sections */}
-                  <div
-                    className={`my-8 flex-1 space-y-8 ${
-                      layoutSettings.columnCount === 2 ? 'columns-1 md:columns-2 gap-8' : 'space-y-8'
-                    }`}
-                  >
-                    {document.sections.map((sec, idx) => (
-                      <div
-                        key={sec.id}
-                        className="break-inside-avoid space-y-4 p-5 rounded-2xl bg-white border border-slate-100 shadow-sm relative group"
-                      >
-                        {/* Section Heading */}
-                        <div className="border-b border-slate-100 pb-2 flex items-center justify-between">
-                          <h2
-                            className="font-extrabold text-xl md:text-2xl tracking-tight leading-snug"
-                            style={{ color: layoutSettings.accentColor }}
-                          >
-                            {sec.heading}
-                          </h2>
-                          <button
-                            onClick={() => onOpenAIAssistantForSection(sec.id, sec.content)}
-                            className="no-print opacity-80 hover:opacity-100 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-bold flex items-center gap-1 transition"
-                          >
-                            <Sparkles className="w-3 h-3 text-amber-500" />
-                            <span>এআই এডিট</span>
-                          </button>
-                        </div>
-
-                        {/* Formatted Content Rendering (Converts Markdown stars & lists to styled HTML!) */}
-                        <div
-                          style={{
-                            fontSize: `${layoutSettings.fontSize}px`,
-                            lineHeight: layoutSettings.lineHeight,
-                          }}
-                        >
-                          <FormattedContent
-                            content={sec.content}
-                            accentColor={layoutSettings.accentColor}
-                          />
-                        </div>
-
-                        {/* Callout Box */}
-                        {sec.callout && (
-                          <div
-                            className="p-4 rounded-xl bg-slate-50 border-l-4 my-4 shadow-sm"
-                            style={{ borderColor: layoutSettings.accentColor }}
-                          >
-                            {sec.callout.title && (
-                              <div className="flex items-center gap-2 mb-1 text-xs font-bold uppercase tracking-wider text-slate-700">
-                                <Quote className="w-3.5 h-3.5 text-blue-600" />
-                                <span>{sec.callout.title}</span>
-                              </div>
-                            )}
-                            <p className="text-xs text-slate-800 leading-relaxed font-serif italic">
-                              {sec.callout.text}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* MCQ Questions Rendering */}
-                        {sec.mcqs && sec.mcqs.length > 0 && (
-                          <div className="my-6 space-y-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200">
-                            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                              <span className="text-xs font-bold uppercase tracking-widest text-slate-700 flex items-center gap-2">
-                                <Check className="w-4 h-4 text-emerald-600" />
-                                <span>বহুনির্বাচনী প্রশ্ন ব্যাংক ({sec.mcqs.length}টি প্রশ্ন)</span>
-                              </span>
-                            </div>
-
-                            <div className="space-y-4">
-                              {sec.mcqs.map((q, qIdx) => (
-                                <div key={q.id || qIdx} className="p-4 bg-white rounded-xl border border-slate-200 space-y-3 shadow-sm">
-                                  <h4 className="font-bold text-sm text-slate-900 leading-snug">
-                                    <span className="text-blue-600 font-extrabold mr-1.5">
-                                      প্রশ্ন {q.questionNumber || qIdx + 1}.
-                                    </span>
-                                    {q.question}
-                                  </h4>
-
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                                    {q.options.map((opt) => {
-                                      const isCorrect = opt.key === q.correctAnswer;
-                                      return (
-                                        <div
-                                          key={opt.key}
-                                          className={`p-2.5 rounded-lg border flex items-start gap-2.5 transition ${
-                                            isCorrect
-                                              ? 'bg-emerald-50 border-emerald-400 text-emerald-950 font-semibold'
-                                              : 'bg-slate-50 border-slate-200 text-slate-700'
-                                          }`}
-                                        >
-                                          <span
-                                            className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 ${
-                                              isCorrect ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
-                                            }`}
-                                          >
-                                            {opt.key}
-                                          </span>
-                                          <span className="text-xs pt-0.5">{opt.text}</span>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-
-                                  {q.explanation && (
-                                    <div className="mt-2 p-3 bg-blue-50/60 border border-blue-100 rounded-lg text-xs space-y-1">
-                                      <span className="font-bold text-blue-900 text-[11px] uppercase tracking-wider block">
-                                        উত্তরের ব্যাখ্যা:
-                                      </span>
-                                      <p className="text-blue-950 leading-relaxed text-[11px]">{q.explanation}</p>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-
-                    {/* Document References */}
-                    {document.references && document.references.length > 0 && (
-                      <div className="pt-6 border-t-2 border-slate-200 space-y-2">
-                        <h4 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider">
-                          রেফারেন্স ও তথ্যসূত্র (References)
-                        </h4>
-                        <ol className="list-decimal pl-5 text-xs text-slate-600 space-y-1">
-                          {document.references.map((ref, rIdx) => (
-                            <li key={rIdx}>{ref}</li>
-                          ))}
-                        </ol>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Footer */}
-                  <div className="border-t border-slate-200 pt-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase">
-                    <span>{layoutSettings.footerText}</span>
-                    <span>পৃষ্ঠা ৩</span>
                   </div>
                 </div>
               </div>
@@ -686,87 +727,86 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
           </div>
         )}
 
-        {/* VIEW 2: TEXT EDITOR MODE */}
+        {/* VIEW 2: TEXT EDITOR MODE (NEUMORPHIC STYLE) */}
         {viewMode === 'edit' && (
           <div className="w-full max-w-4xl space-y-6 py-4 animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b pb-4">
-                <h3 className="font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2">
-                  <Edit3 className="w-5 h-5 text-blue-600" />
+            <div className="neu-card p-6 sm:p-8 rounded-3xl space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 pb-4">
+                <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                  <Edit3 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   <span>ডকুমেন্ট শিরোনাম ও অধ্যায় সম্পাদনা</span>
                 </h3>
                 <button
                   onClick={handleAddSection}
-                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 min-h-[40px] touch-manipulation"
+                  className="px-4 py-2.5 neu-primary-btn text-xs font-black rounded-2xl flex items-center gap-1.5 min-h-[40px] touch-manipulation"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>নতুন অধ্যায় যোগ করুন</span>
+                  <span>নতুন অধ্যায়</span>
                 </button>
               </div>
 
               {/* Title input */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">ডকুমেন্ট শিরোনাম:</label>
+              <div className="space-y-2">
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300">
+                  ডকুমেন্ট শিরোনাম:
+                </label>
                 <input
                   type="text"
                   value={document.title}
                   onChange={(e) => setDocument((prev) => ({ ...prev, title: e.target.value }))}
-                  className="w-full p-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-extrabold text-base text-slate-900 dark:text-white min-h-[48px]"
+                  className="w-full p-3.5 rounded-2xl neu-input font-black text-base text-slate-900 dark:text-white min-h-[48px]"
                 />
               </div>
 
               {/* Section list inputs */}
-              <div className="space-y-6 pt-4">
+              <div className="space-y-6 pt-2">
                 {document.sections.map((sec, idx) => (
-                  <div
-                    key={sec.id}
-                    className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 space-y-3"
-                  >
+                  <div key={sec.id} className="p-5 rounded-2xl neu-flat space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-extrabold text-xs text-blue-600 font-mono">
+                      <span className="font-black text-xs text-blue-600 dark:text-blue-400 font-mono">
                         অধ্যায় {idx + 1}
                       </span>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => handleMoveSection(idx, 'up')}
                           disabled={idx === 0}
-                          className="p-1.5 bg-white dark:bg-slate-800 rounded-lg text-slate-600 disabled:opacity-30"
+                          className="p-1.5 neu-button rounded-xl text-slate-600 dark:text-slate-300 disabled:opacity-30"
                         >
                           <MoveUp className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleMoveSection(idx, 'down')}
                           disabled={idx === document.sections.length - 1}
-                          className="p-1.5 bg-white dark:bg-slate-800 rounded-lg text-slate-600 disabled:opacity-30"
+                          className="p-1.5 neu-button rounded-xl text-slate-600 dark:text-slate-300 disabled:opacity-30"
                         >
                           <MoveDown className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteSection(sec.id)}
-                          className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100"
+                          className="p-1.5 neu-button rounded-xl text-rose-600 hover:text-rose-700"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">হেডিং:</label>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-400">হেডিং:</label>
                       <input
                         type="text"
                         value={sec.heading}
                         onChange={(e) => handleUpdateSectionHeading(sec.id, e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-sm text-slate-900 dark:text-white"
+                        className="w-full p-3 rounded-xl neu-input font-bold text-sm text-slate-900 dark:text-white"
                       />
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">লেখা / মূল বিষয়বস্তু:</label>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-400">লেখা / মূল বিষয়বস্তু:</label>
                       <textarea
                         rows={6}
                         value={sec.content}
                         onChange={(e) => handleUpdateSectionContent(sec.id, e.target.value)}
-                        className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-bengali resize-y"
+                        className="w-full p-3.5 rounded-xl neu-input text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-bengali resize-y"
                       />
                     </div>
                   </div>
@@ -776,12 +816,12 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
           </div>
         )}
 
-        {/* VIEW 3: LAYOUT & TOOLS MODE */}
+        {/* VIEW 3: LAYOUT & TOOLS MODE (NEUMORPHIC STYLE) */}
         {viewMode === 'settings' && (
           <div className="w-full max-w-4xl space-y-6 py-4 animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-              <h3 className="font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2 border-b pb-3">
-                <Sliders className="w-5 h-5 text-blue-600" />
+            <div className="neu-card p-6 sm:p-8 rounded-3xl space-y-6">
+              <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800/60 pb-3">
+                <Sliders className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 <span>স্মার্ট লেআউট ও ডিজাইন অপশন</span>
               </h3>
 
@@ -793,6 +833,34 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Floating Neumorphic Mobile Action Dock */}
+      <div className="no-print sm:hidden fixed bottom-16 left-3 right-3 z-40 p-2.5 neu-card rounded-2xl backdrop-blur-md flex items-center justify-around gap-2 shadow-2xl">
+        <button
+          onClick={() => setViewMode(viewMode === 'paper' ? 'edit' : 'paper')}
+          className="flex-1 py-2 px-3 neu-button rounded-xl text-xs font-black text-slate-800 dark:text-slate-100 flex items-center justify-center gap-1.5"
+        >
+          {viewMode === 'paper' ? <Edit3 className="w-4 h-4 text-blue-500" /> : <Eye className="w-4 h-4 text-amber-500" />}
+          <span>{viewMode === 'paper' ? 'এডিটর' : 'পেপার ভিউ'}</span>
+        </button>
+
+        <button
+          onClick={handleDownloadPDFClick}
+          disabled={isExporting}
+          className="flex-1 py-2 px-3 neu-primary-btn rounded-xl text-xs font-black flex items-center justify-center gap-1.5 active:scale-95"
+        >
+          <Download className="w-4 h-4" />
+          <span>{isExporting ? '...' : 'ডাউনলোড'}</span>
+        </button>
+
+        <button
+          onClick={() => setUserZoom(userZoom === null ? 1.0 : null)}
+          className="p-2 neu-button rounded-xl text-slate-700 dark:text-slate-200 flex items-center justify-center"
+          title="জুম টগল"
+        >
+          <Maximize2 className="w-4 h-4 text-blue-600" />
+        </button>
       </div>
 
       {/* Template Marketplace Modal */}
