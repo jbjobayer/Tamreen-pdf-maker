@@ -25,6 +25,8 @@ import {
 import { DocumentData, DocumentSection, LayoutSettings, LanguageCode, CustomizationSettings } from '../types';
 import { TemplateGalleryModal } from './TemplateGalleryModal';
 import { PremiumTemplate, COLOR_THEME_LIBRARY, TYPOGRAPHY_PRESETS } from '../data/templateLibrary';
+import { SmartLayoutEngine, SmartLayoutConfig } from './SmartLayoutEngine';
+import { LayoutGrid } from 'lucide-react';
 
 interface StudioCanvasProps {
   document: DocumentData;
@@ -37,9 +39,29 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
   setDocument,
   onOpenAIAssistantForSection,
 }) => {
-  const [activeTab, setActiveTab] = useState<'layout' | 'typography' | 'cover' | 'sections'>('layout');
+  const [activeTab, setActiveTab] = useState<'smart' | 'layout' | 'typography' | 'cover' | 'sections'>('smart');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState<boolean>(false);
+
+  // Smart Layout Engine Config State
+  const [smartLayoutConfig, setSmartLayoutConfig] = useState<SmartLayoutConfig>({
+    paradigm: 'academic',
+    gridTemplate: 'equal_2col',
+    gridGap: 20,
+    cardStyle: 'bordered',
+    fluidHeroSection: true,
+    columnCount: document.columnCount || 2,
+  });
+
+  const handleSmartLayoutChange = (newConfig: SmartLayoutConfig) => {
+    setSmartLayoutConfig(newConfig);
+    if (newConfig.columnCount !== layoutSettings.columnCount) {
+      setLayoutSettings((prev) => ({
+        ...prev,
+        columnCount: newConfig.columnCount,
+      }));
+    }
+  };
 
   // Layout settings
   const [layoutSettings, setLayoutSettings] = useState<LayoutSettings>({
@@ -198,40 +220,59 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
         {sidebarOpen && (
           <div className="flex-1 overflow-y-auto p-4 space-y-6 text-xs">
             {/* Tool Category Tabs */}
-            <div className="grid grid-cols-4 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[11px] font-medium">
+            <div className="grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px] font-medium">
+              <button
+                onClick={() => setActiveTab('smart')}
+                className={`py-1.5 rounded transition font-bold flex flex-col items-center gap-0.5 ${
+                  activeTab === 'smart'
+                    ? 'bg-gradient-to-r from-indigo-600 to-teal-600 text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span>Smart Engine</span>
+              </button>
               <button
                 onClick={() => setActiveTab('layout')}
-                className={`py-1.5 rounded transition ${
+                className={`py-1.5 rounded transition flex flex-col items-center gap-0.5 ${
                   activeTab === 'layout' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Layout
+                <span>Layout</span>
               </button>
               <button
                 onClick={() => setActiveTab('typography')}
-                className={`py-1.5 rounded transition ${
+                className={`py-1.5 rounded transition flex flex-col items-center gap-0.5 ${
                   activeTab === 'typography' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Type
+                <span>Type</span>
               </button>
               <button
                 onClick={() => setActiveTab('cover')}
-                className={`py-1.5 rounded transition ${
+                className={`py-1.5 rounded transition flex flex-col items-center gap-0.5 ${
                   activeTab === 'cover' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Cover
+                <span>Cover</span>
               </button>
               <button
                 onClick={() => setActiveTab('sections')}
-                className={`py-1.5 rounded transition ${
+                className={`py-1.5 rounded transition flex flex-col items-center gap-0.5 ${
                   activeTab === 'sections' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Pages
+                <span>Pages</span>
               </button>
             </div>
+
+            {/* TAB 0: Smart Layout Engine */}
+            {activeTab === 'smart' && (
+              <SmartLayoutEngine
+                config={smartLayoutConfig}
+                onChangeConfig={handleSmartLayoutChange}
+                isOpen={true}
+              />
+            )}
 
             {/* TAB 1: Layout & Columns */}
             {activeTab === 'layout' && (
@@ -535,6 +576,15 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setActiveTab('smart')}
+              className="px-3.5 py-1.5 rounded-lg bg-slate-950 border border-indigo-500/50 hover:border-indigo-400 text-indigo-300 font-semibold flex items-center gap-1.5 transition shadow"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-teal-400" />
+              <span className="uppercase text-[10px] font-mono tracking-wide">
+                Paradigm: {smartLayoutConfig.paradigm}
+              </span>
+            </button>
+            <button
               onClick={() => setIsTemplateModalOpen(true)}
               className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold flex items-center gap-1.5 shadow-md transition"
             >
@@ -711,21 +761,69 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
             <span>PUBLICATION CANVAS</span>
           </div>
 
-          {/* Sections Body with Multi-Column option */}
+          {/* Sections Body with Smart Layout Engine rendering */}
           <div
-            className={`my-8 flex-1 space-y-8 ${
-              layoutSettings.columnCount === 2
-                ? 'columns-1 md:columns-2 gap-8'
-                : layoutSettings.columnCount === 3
-                ? 'columns-1 md:columns-3 gap-6'
+            className={`my-8 flex-1 transition-all ${
+              smartLayoutConfig.paradigm === 'academic'
+                ? layoutSettings.columnCount === 2
+                  ? 'columns-1 md:columns-2 gap-8'
+                  : layoutSettings.columnCount === 3
+                  ? 'columns-1 md:columns-3 gap-6'
+                  : 'space-y-8'
                 : ''
             }`}
+            style={{
+              display:
+                smartLayoutConfig.paradigm === 'grid'
+                  ? 'grid'
+                  : smartLayoutConfig.paradigm === 'fluid'
+                  ? 'flex'
+                  : undefined,
+              flexDirection: smartLayoutConfig.paradigm === 'fluid' ? 'column' : undefined,
+              gridTemplateColumns:
+                smartLayoutConfig.paradigm === 'grid'
+                  ? smartLayoutConfig.gridTemplate === 'equal_3col'
+                    ? 'repeat(3, minmax(0, 1fr))'
+                    : smartLayoutConfig.gridTemplate === 'asymmetric_left'
+                    ? '2fr 1fr'
+                    : smartLayoutConfig.gridTemplate === 'asymmetric_right'
+                    ? '1fr 2fr'
+                    : 'repeat(2, minmax(0, 1fr))'
+                  : undefined,
+              gap:
+                smartLayoutConfig.paradigm !== 'academic'
+                  ? `${smartLayoutConfig.gridGap}px`
+                  : undefined,
+            }}
           >
-            {document.sections.map((sec, idx) => (
-              <div
-                key={sec.id}
-                className="break-inside-avoid space-y-4 mb-8 group relative p-3 rounded-xl hover:bg-slate-50/80 transition border border-transparent hover:border-slate-200"
-              >
+            {document.sections.map((sec, idx) => {
+              const isBentoHero =
+                smartLayoutConfig.paradigm === 'grid' &&
+                smartLayoutConfig.gridTemplate === 'bento_hero' &&
+                idx === 0;
+              const isFluidHero =
+                smartLayoutConfig.paradigm === 'fluid' &&
+                smartLayoutConfig.fluidHeroSection &&
+                idx === 0;
+
+              return (
+                <div
+                  key={sec.id}
+                  className={`break-inside-avoid space-y-4 group relative transition ${
+                    isFluidHero
+                      ? 'p-6 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950 text-white shadow-xl border border-indigo-500/30'
+                      : smartLayoutConfig.cardStyle === 'minimal'
+                      ? 'border-b border-slate-200 pb-4'
+                      : smartLayoutConfig.cardStyle === 'paper_card'
+                      ? 'border border-amber-200/80 rounded-2xl p-5 bg-amber-50/30 shadow-sm'
+                      : smartLayoutConfig.cardStyle === 'elevated_shadow'
+                      ? 'border border-slate-200 rounded-2xl p-5 bg-white shadow-md'
+                      : 'border border-slate-200 rounded-2xl p-5 bg-white shadow-sm'
+                  }`}
+                  style={{
+                    gridColumn: isBentoHero ? '1 / -1' : undefined,
+                  }}
+                >
                 {/* AI Floating Actions for this section */}
                 <div className="no-print absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition flex items-center gap-1 bg-slate-900 text-white p-1 rounded-lg shadow-lg text-[10px] z-20">
                   <button
@@ -1037,7 +1135,8 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* References & Footnotes Section */}
