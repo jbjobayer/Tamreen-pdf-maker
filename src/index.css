@@ -11,7 +11,7 @@
     font-family: 'Cinzel', serif;
   }
   .font-bengali {
-    font-family: 'Noto Serif Bengali', 'Hind Siliguri', 'Tiro Bangla', serif;
+    font-family: 'Noto Serif Bengali', 'Tiro Bangla', 'Hind Siliguri', serif;
   }
   .font-bengali-sans {
     font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
@@ -25,6 +25,57 @@
   .font-mono-custom {
     font-family: 'Space Mono', monospace;
   }
+}
+
+/* Neumorphic / Soft UI System Styling */
+.neu-bg {
+  background-color: #eaf0f8;
+}
+
+.neu-flat {
+  background: #eaf0f8;
+  box-shadow: 8px 8px 18px #c8d1e2, -8px -8px 18px #ffffff;
+}
+
+.neu-card {
+  background: #eaf0f8;
+  box-shadow: 6px 6px 14px #c2cbdd, -6px -6px 14px #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.neu-button {
+  background: #eaf0f8;
+  box-shadow: 5px 5px 12px #c2cbdd, -5px -5px 12px #ffffff;
+  transition: all 0.2s ease-in-out;
+}
+
+.neu-button:hover {
+  box-shadow: 7px 7px 16px #b6c1d7, -7px -7px 16px #ffffff;
+  transform: translateY(-1px);
+}
+
+.neu-button:active, .neu-pressed {
+  background: #eaf0f8;
+  box-shadow: inset 4px 4px 8px #c2cbdd, inset -4px -4px 8px #ffffff;
+}
+
+.neu-input {
+  background: #eaf0f8;
+  box-shadow: inset 3px 3px 8px #c2cbdd, inset -3px -3px 8px #ffffff;
+  border: 1px solid rgba(215, 225, 240, 0.8);
+}
+
+.neu-primary-btn {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 6px 6px 16px #b8c3d8, -6px -6px 16px #ffffff;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.neu-primary-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  box-shadow: 8px 8px 20px #aeb9ce, -8px -8px 20px #ffffff;
+  transform: translateY(-2px);
 }
 
 /* Word-style A4 Paper Specifications */
