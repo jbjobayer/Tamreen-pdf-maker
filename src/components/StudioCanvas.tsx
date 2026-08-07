@@ -22,7 +22,9 @@ import {
   Globe,
   ImageIcon,
 } from 'lucide-react';
-import { DocumentData, DocumentSection, LayoutSettings, LanguageCode } from '../types';
+import { DocumentData, DocumentSection, LayoutSettings, LanguageCode, CustomizationSettings } from '../types';
+import { TemplateGalleryModal } from './TemplateGalleryModal';
+import { PremiumTemplate, COLOR_THEME_LIBRARY, TYPOGRAPHY_PRESETS } from '../data/templateLibrary';
 
 interface StudioCanvasProps {
   document: DocumentData;
@@ -37,6 +39,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'layout' | 'typography' | 'cover' | 'sections'>('layout');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState<boolean>(false);
 
   // Layout settings
   const [layoutSettings, setLayoutSettings] = useState<LayoutSettings>({
@@ -53,6 +56,32 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
     footerText: document.footerText || 'AI PDF Studio Edition',
     marginSize: 'normal',
   });
+
+  const handleApplyTemplate = (
+    template: PremiumTemplate,
+    updatedCustomization: CustomizationSettings,
+    updatedDocPartial: Partial<DocumentData>
+  ) => {
+    setLayoutSettings((prev) => ({
+      ...prev,
+      primaryFont: updatedCustomization.fontFamily,
+      accentColor: updatedCustomization.accentColor,
+      columnCount: updatedCustomization.columns as any,
+      headerText: updatedCustomization.headerText,
+      footerText: updatedCustomization.footerText,
+      marginSize: updatedCustomization.margins as any,
+    }));
+
+    setDocument((prev) => ({
+      ...prev,
+      ...updatedDocPartial,
+      primaryFont: updatedCustomization.fontFamily,
+      accentColor: updatedCustomization.accentColor,
+      columnCount: updatedCustomization.columns as any,
+      headerText: updatedCustomization.headerText,
+      footerText: updatedCustomization.footerText,
+    }));
+  };
 
   // Font Helper Class
   const getFontFamilyClass = (fontName: string) => {
@@ -504,11 +533,20 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
               {document.documentType} • {layoutSettings.columnCount} Column • {layoutSettings.primaryFont}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-slate-400">Target Direction:</span>
-            <span className="font-mono text-amber-300 uppercase px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
-              {isRTL ? 'RTL (Arabic)' : 'LTR'}
-            </span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsTemplateModalOpen(true)}
+              className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold flex items-center gap-1.5 shadow-md transition"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>Template Marketplace (50+)</span>
+            </button>
+            <div className="flex items-center gap-1">
+              <span className="text-slate-400">Direction:</span>
+              <span className="font-mono text-amber-300 uppercase px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
+                {isRTL ? 'RTL' : 'LTR'}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -1023,6 +1061,39 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Premium Template Marketplace Modal */}
+      <TemplateGalleryModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        document={document}
+        customization={{
+          titleFontSize: 30,
+          chapterFontSize: 22,
+          headingFontSize: 18,
+          subHeadingFontSize: 16,
+          bodyFontSize: 12,
+          footnoteFontSize: 9,
+          fontFamily: layoutSettings.primaryFont,
+          headingFontFamily: layoutSettings.headingFont,
+          bodyColor: '#1e293b',
+          headingColor: layoutSettings.accentColor,
+          accentColor: layoutSettings.accentColor,
+          backgroundColor: '#ffffff',
+          pageSize: layoutSettings.pageFormat,
+          margins: layoutSettings.marginSize,
+          lineHeight: layoutSettings.lineHeight,
+          paragraphSpacing: 10,
+          columns: layoutSettings.columnCount,
+          headerText: layoutSettings.headerText,
+          footerText: layoutSettings.footerText,
+          pageNumberStyle: 'simple',
+          showWatermark: false,
+          watermarkText: '',
+          watermarkOpacity: 0.1,
+        }}
+        onApplyTemplate={handleApplyTemplate}
+      />
     </div>
   );
 };

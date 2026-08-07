@@ -90,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>Templates</span>
+            <span>Marketplace (50+)</span>
           </button>
 
           <button
