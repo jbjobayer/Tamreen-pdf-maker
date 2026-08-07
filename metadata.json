@@ -1,6 +1,6 @@
 {
-  "name": "AI PDF Studio",
-  "description": "Create publication-quality documents with AI",
+  "name": "Tamreen AI PDF Studio",
+  "description": "Mobile-first AI PDF Studio for students, teachers, scholars, and researchers",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

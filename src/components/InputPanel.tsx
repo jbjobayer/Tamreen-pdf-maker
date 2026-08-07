@@ -446,7 +446,13 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                     key={idx}
                     onClick={() => {
                       setPromptText(item.title);
-                      setDocumentType(item.type);
+                      setDocumentType(
+                        item.preset === 'islamic'
+                          ? 'Islamic Manuscript'
+                          : item.preset === 'university'
+                          ? 'University Answer Sheet'
+                          : 'Textbook Chapter'
+                      );
                       if (item.title.includes('বাংলা')) setTargetLanguage('Bengali');
                       else if (item.title.includes('Al-Adlu')) setTargetLanguage('Arabic');
                     }}

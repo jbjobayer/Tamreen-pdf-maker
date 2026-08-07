@@ -1,18 +1,37 @@
 import React, { useState } from 'react';
 import { Header } from './components/Header';
+import { BottomNavigation, MainTab } from './components/BottomNavigation';
+import { HomePage } from './components/HomePage';
+import { CreateWizard } from './components/CreateWizard';
+import { TemplateMarketplace } from './components/TemplateMarketplace';
+import { MyPDFsLibrary } from './components/MyPDFsLibrary';
+import { ProfileView } from './components/ProfileView';
 import { StudioCanvas } from './components/StudioCanvas';
-import { InputPanel } from './components/InputPanel';
-import { TemplateGallery } from './components/TemplateGallery';
 import { AIAssistantModal } from './components/AIAssistantModal';
 import { CameraScannerModal } from './components/CameraScannerModal';
 import { sampleDocuments } from './data/sampleDocuments';
 import { DocumentData, OCRResult } from './types';
 import { generateDownloadablePDF, triggerPrintDialog } from './components/PDFExporter';
-import { Sparkles, FileText, CheckCircle2 } from 'lucide-react';
+import { SupportedLanguage, LANGUAGE_OPTIONS } from './i18n';
+import { Sparkles, ArrowLeft } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'studio' | 'input' | 'templates' | 'presets'>('studio');
+  // Main Tab Navigation
+  const [mainTab, setMainTab] = useState<MainTab>('home');
+
+  // Active Canvas Mode (whether viewing/editing a specific PDF canvas)
+  const [isViewingCanvas, setIsViewingCanvas] = useState<boolean>(false);
+
+  // Language & Theme state
+  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('en');
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
+  // Documents State
+  const [savedDocuments, setSavedDocuments] = useState<DocumentData[]>(sampleDocuments);
   const [currentDoc, setCurrentDoc] = useState<DocumentData>(sampleDocuments[0]);
+
+  // Wizard Category Pre-selection
+  const [wizardInitialCategory, setWizardInitialCategory] = useState<string>('study_notes');
 
   // Modals state
   const [aiModalOpen, setAiModalOpen] = useState<boolean>(false);
@@ -20,13 +39,23 @@ export default function App() {
   const [activeSectionText, setActiveSectionText] = useState<string>('');
   const [cameraModalOpen, setCameraModalOpen] = useState<boolean>(false);
 
-  // Status & Export loading
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  // Export Loading Notification
   const [exportNotice, setExportNotice] = useState<string | null>(null);
 
+  // Direction (LTR vs RTL) based on language
+  const currentLangObj = LANGUAGE_OPTIONS.find((l) => l.code === currentLanguage);
+  const textDirection = currentLangObj?.dir || 'ltr';
+
   const handleDocumentGenerated = (newDoc: DocumentData) => {
+    setSavedDocuments((prev) => [newDoc, ...prev]);
     setCurrentDoc(newDoc);
-    setActiveTab('studio');
+    setIsViewingCanvas(true);
+  };
+
+  const handleStartCreateWithCategory = (category?: string) => {
+    if (category) setWizardInitialCategory(category);
+    setMainTab('create');
+    setIsViewingCanvas(false);
   };
 
   const handleOpenAICopilot = (sectionId?: string, currentText?: string) => {
@@ -44,7 +73,6 @@ export default function App() {
         ),
       }));
     } else {
-      // Append as new section or update summary
       setCurrentDoc((prev) => ({
         ...prev,
         sections: [
@@ -61,7 +89,6 @@ export default function App() {
   };
 
   const handleOCRComplete = (ocrData: OCRResult) => {
-    // Convert OCR extracted text into a new section or document update
     setCurrentDoc((prev) => ({
       ...prev,
       title: ocrData.title || prev.title,
@@ -69,13 +96,13 @@ export default function App() {
         ...prev.sections,
         {
           id: 'sec-ocr-' + Date.now(),
-          heading: ocrData.title ? `OCR: ${ocrData.title}` : 'Scanned Notebook / Page Content',
+          heading: ocrData.title ? `OCR: ${ocrData.title}` : 'Scanned Document Content',
           level: 1,
           content: ocrData.extractedText,
         },
       ],
     }));
-    setActiveTab('studio');
+    setIsViewingCanvas(true);
   };
 
   const handleExportPDF = async () => {
@@ -89,99 +116,134 @@ export default function App() {
     }
   };
 
+  const handleDeleteDocument = (docId: string) => {
+    setSavedDocuments((prev) => prev.filter((d) => d.id !== docId));
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-inter">
-      {/* Top Application Header */}
+    <div
+      dir={textDirection}
+      className={`min-h-screen flex flex-col font-inter transition-colors duration-200 ${
+        isDarkMode
+          ? 'bg-slate-950 text-slate-100'
+          : 'bg-[#F8FAFC] text-slate-800'
+      }`}
+    >
+      {/* Top App Bar */}
       <Header
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        currentLanguage={currentLanguage}
+        onLanguageChange={setCurrentLanguage}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onExportPDF={handleExportPDF}
         onPrintPreview={triggerPrintDialog}
         onOpenAICopilot={() => handleOpenAICopilot()}
-        documentTitle={currentDoc.title}
-        isGenerating={isGenerating}
       />
 
       {/* Export / Toast Notification */}
       {exportNotice && (
-        <div className="fixed top-16 right-4 z-50 bg-teal-900 border border-teal-500 text-teal-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-bounce">
+        <div className="fixed top-16 right-4 z-50 bg-teal-900 border border-teal-500 text-teal-100 px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 animate-bounce">
           <Sparkles className="w-4 h-4 text-teal-300 animate-spin" />
           <span className="text-xs font-semibold">{exportNotice}</span>
         </div>
       )}
 
-      {/* Main Body Container */}
-      <main className="flex-1 flex flex-col">
-        {activeTab === 'studio' && (
-          <StudioCanvas
-            document={currentDoc}
-            setDocument={setCurrentDoc}
-            onOpenAIAssistantForSection={handleOpenAICopilot}
-          />
-        )}
-
-        {activeTab === 'input' && (
-          <InputPanel
-            onDocumentGenerated={handleDocumentGenerated}
-            onOpenCameraModal={() => setCameraModalOpen(true)}
-            isGenerating={isGenerating}
-            setIsGenerating={setIsGenerating}
-          />
-        )}
-
-        {activeTab === 'templates' && (
-          <TemplateGallery
-            onSelectTemplate={(doc) => {
-              setCurrentDoc(doc);
-              setActiveTab('studio');
-            }}
-          />
-        )}
-
-        {activeTab === 'presets' && (
-          <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-            <div className="text-center max-w-2xl mx-auto space-y-2">
-              <h2 className="font-playfair text-3xl font-bold text-white">Preset Publication Library</h2>
-              <p className="text-xs text-slate-400">
-                Click any preset to immediately view and edit in Adobe InDesign Studio mode.
-              </p>
+      {/* Main Container */}
+      <main className="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 py-4">
+        {/* If user is in Canvas View Mode */}
+        {isViewingCanvas ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between no-print bg-white dark:bg-slate-900 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <button
+                onClick={() => setIsViewingCanvas(false)}
+                className="flex items-center gap-1.5 text-xs font-extrabold text-blue-600 dark:text-blue-400 p-1"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to App Dashboard</span>
+              </button>
+              <span className="text-xs font-bold text-slate-500 truncate max-w-[200px]">
+                {currentDoc.title}
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {sampleDocuments.map((doc) => (
-                <div
-                  key={doc.id}
-                  onClick={() => {
-                    setCurrentDoc(doc);
-                    setActiveTab('studio');
-                  }}
-                  className="p-5 bg-slate-900/90 border border-slate-800 rounded-2xl hover:border-teal-500/50 transition cursor-pointer space-y-3 shadow-xl"
-                >
-                  <div className="flex justify-between items-start">
-                    <span className="text-[10px] font-mono uppercase bg-slate-950 px-2.5 py-1 rounded-full text-teal-300 border border-slate-800">
-                      {doc.documentType}
-                    </span>
-                    <span className="text-xs font-mono text-slate-400">
-                      {doc.language === 'ar' ? 'Arabic (RTL)' : doc.language === 'bn' ? 'Bengali' : 'English'}
-                    </span>
-                  </div>
-
-                  <h3 className="font-playfair font-bold text-lg text-white">{doc.title}</h3>
-                  <p className="text-xs text-slate-400 line-clamp-2">{doc.subtitle}</p>
-
-                  <div className="pt-2 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400 font-mono">
-                    <span>Author: {doc.author}</span>
-                    <span className="text-teal-400 font-semibold flex items-center gap-1">
-                      <span>Open Canvas</span>
-                      <span>→</span>
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <StudioCanvas
+              document={currentDoc}
+              setDocument={setCurrentDoc}
+              onOpenAIAssistantForSection={handleOpenAICopilot}
+            />
           </div>
+        ) : (
+          <>
+            {mainTab === 'home' && (
+              <HomePage
+                currentLanguage={currentLanguage}
+                isDarkMode={isDarkMode}
+                onStartCreate={handleStartCreateWithCategory}
+                onBrowseTemplates={() => setMainTab('templates')}
+              />
+            )}
+
+            {mainTab === 'create' && (
+              <CreateWizard
+                currentLanguage={currentLanguage}
+                isDarkMode={isDarkMode}
+                initialCategory={wizardInitialCategory}
+                onDocumentGenerated={handleDocumentGenerated}
+                onCancel={() => setMainTab('home')}
+                onOpenCameraModal={() => setCameraModalOpen(true)}
+              />
+            )}
+
+            {mainTab === 'templates' && (
+              <TemplateMarketplace
+                currentLanguage={currentLanguage}
+                isDarkMode={isDarkMode}
+                onSelectTemplateDoc={(doc) => {
+                  setCurrentDoc(doc);
+                  setIsViewingCanvas(true);
+                }}
+              />
+            )}
+
+            {mainTab === 'mypdfs' && (
+              <MyPDFsLibrary
+                currentLanguage={currentLanguage}
+                isDarkMode={isDarkMode}
+                savedDocuments={savedDocuments}
+                onSelectDocument={(doc) => {
+                  setCurrentDoc(doc);
+                  setIsViewingCanvas(true);
+                }}
+                onDeleteDocument={handleDeleteDocument}
+                onExportPDF={handleExportPDF}
+                onPrintPreview={triggerPrintDialog}
+                onStartCreate={() => setMainTab('create')}
+              />
+            )}
+
+            {mainTab === 'profile' && (
+              <ProfileView
+                currentLanguage={currentLanguage}
+                onLanguageChange={setCurrentLanguage}
+                isDarkMode={isDarkMode}
+                onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+                totalPdfsCount={savedDocuments.length}
+              />
+            )}
+          </>
         )}
       </main>
+
+      {/* Bottom Navigation Bar */}
+      <BottomNavigation
+        activeTab={mainTab}
+        setActiveTab={(tab) => {
+          setMainTab(tab);
+          setIsViewingCanvas(false);
+        }}
+        currentLanguage={currentLanguage}
+        isDarkMode={isDarkMode}
+      />
 
       {/* AI Copilot Modal */}
       <AIAssistantModal

@@ -1295,8 +1295,6 @@ export const PREMIUM_TEMPLATE_CATALOG: PremiumTemplate[] = [
       headingColor: '#f8fafc',
       bodyColor: '#cbd5e1',
       backgroundColor: '#0f172a',
-      cardBgColor: '#1e293b',
-      borderColor: '#334155',
       fontFamily: 'Inter',
       headingFontFamily: 'Inter',
       margins: 'compact',

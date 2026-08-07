@@ -1,139 +1,243 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FileText,
+  Globe,
+  Bell,
+  Settings,
+  User,
+  Check,
+  Moon,
+  Sun,
   Sparkles,
   Printer,
   Download,
-  Layout,
-  BookOpen,
-  Camera,
-  Layers,
   Wand2,
 } from 'lucide-react';
+import { LANGUAGE_OPTIONS, SupportedLanguage, getTranslation } from '../i18n';
 
 interface HeaderProps {
-  activeTab: 'studio' | 'input' | 'templates' | 'presets';
-  setActiveTab: (tab: 'studio' | 'input' | 'templates' | 'presets') => void;
+  currentLanguage: SupportedLanguage;
+  onLanguageChange: (lang: SupportedLanguage) => void;
+  isDarkMode: boolean;
+  onToggleDarkMode: () => void;
   onExportPDF: () => void;
   onPrintPreview: () => void;
   onOpenAICopilot: () => void;
-  documentTitle?: string;
   isGenerating?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  activeTab,
-  setActiveTab,
+  currentLanguage,
+  onLanguageChange,
+  isDarkMode,
+  onToggleDarkMode,
   onExportPDF,
   onPrintPreview,
   onOpenAICopilot,
-  documentTitle = 'Untitled Publication',
   isGenerating = false,
 }) => {
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+
+  const selectedLangObj = LANGUAGE_OPTIONS.find((l) => l.code === currentLanguage) || LANGUAGE_OPTIONS[1];
+
   return (
-    <header className="no-print bg-slate-900/95 border-b border-slate-800 backdrop-blur sticky top-0 z-40 px-4 py-3">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Logo & Tagline */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-teal-500 to-emerald-400 p-0.5 shadow-lg shadow-indigo-500/20">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <FileText className="w-5 h-5 text-teal-400" />
+    <header className={`no-print sticky top-0 z-40 px-3 py-2.5 transition-colors border-b ${
+      isDarkMode
+        ? 'bg-slate-900/95 border-slate-800 text-slate-100'
+        : 'bg-white/95 border-slate-200/80 text-slate-900 shadow-sm backdrop-blur-md'
+    }`}>
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+        {/* Top Left Logo */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-teal-400 p-0.5 shadow-md shadow-blue-500/20 shrink-0">
+            <div className={`w-full h-full rounded-[14px] flex items-center justify-center ${
+              isDarkMode ? 'bg-slate-950' : 'bg-white'
+            }`}>
+              <FileText className="w-5 h-5 text-blue-600" />
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-playfair font-bold text-lg text-white tracking-tight">
-                AI PDF Studio
-              </h1>
-              <span className="text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-300 border border-teal-500/20">
-                Publication Grade
+            <div className="flex items-center gap-1.5">
+              <span className="font-extrabold text-base tracking-tight font-inter text-slate-900 dark:text-white">
+                Tamreen <span className="text-blue-600">AI PDF</span>
+              </span>
+              <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800/50">
+                {getTranslation(currentLanguage, 'publicationGrade')}
               </span>
             </div>
-            <p className="text-xs text-slate-400 hidden sm:block">
-              Adobe InDesign + Canva + Notion + Gemini AI
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block font-medium">
+              ChatGPT + Canva + Notion + Apple Design
             </p>
           </div>
         </div>
 
-        {/* Center Tabs */}
-        <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800/80 text-xs font-medium">
-          <button
-            onClick={() => setActiveTab('studio')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition ${
-              activeTab === 'studio'
-                ? 'bg-gradient-to-r from-teal-500 to-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
-          >
-            <Layout className="w-3.5 h-3.5" />
-            <span>Studio Canvas</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('input')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition ${
-              activeTab === 'input'
-                ? 'bg-gradient-to-r from-teal-500 to-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>AI Creator Input</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('templates')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition ${
-              activeTab === 'templates'
-                ? 'bg-gradient-to-r from-teal-500 to-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Marketplace (50+)</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('presets')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition ${
-              activeTab === 'presets'
-                ? 'bg-gradient-to-r from-teal-500 to-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>Showcase Presets</span>
-          </button>
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        {/* Top Right Controls */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Quick AI Copilot */}
           <button
             onClick={onOpenAICopilot}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-indigo-950 text-indigo-200 border border-indigo-700/50 hover:bg-indigo-900 transition shadow-sm"
-            title="AI Studio Assistant"
+            className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl transition shadow-sm ${
+              isDarkMode
+                ? 'bg-blue-950/80 text-blue-200 border border-blue-800/60 hover:bg-blue-900'
+                : 'bg-blue-50 text-blue-700 border border-blue-200/80 hover:bg-blue-100'
+            }`}
           >
-            <Wand2 className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden sm:inline">AI Copilot</span>
+            <Wand2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            <span>AI Copilot</span>
           </button>
 
-          <button
-            onClick={onPrintPreview}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition"
-            title="High Fidelity Print View"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Print</span>
-          </button>
-
+          {/* Export PDF */}
           <button
             onClick={onExportPDF}
             disabled={isGenerating}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-semibold shadow-lg shadow-teal-500/20 transition disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/20 transition disabled:opacity-50 min-h-[40px]"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export PDF</span>
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">{getTranslation(currentLanguage, 'downloadPdf')}</span>
           </button>
+
+          {/* 🌐 Language Selector Button */}
+          <div className="relative">
+            <button
+              onClick={() => setLangMenuOpen(!langMenuOpen)}
+              className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-semibold border transition min-h-[40px] ${
+                isDarkMode
+                  ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
+                  : 'bg-slate-100/80 border-slate-200/80 text-slate-700 hover:bg-slate-200/80'
+              }`}
+            >
+              <Globe className="w-4 h-4 text-blue-600" />
+              <span className="hidden sm:inline font-medium">{selectedLangObj.nativeName}</span>
+              <span className="sm:hidden">{selectedLangObj.flag}</span>
+            </button>
+
+            {/* Language Dropdown Menu */}
+            {langMenuOpen && (
+              <div className={`absolute right-0 mt-2 w-56 rounded-2xl shadow-xl border p-1.5 z-50 animate-in fade-in slide-in-from-top-2 ${
+                isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
+              }`}>
+                <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                  Select Language / ভাষা সিলেক্ট করুন
+                </div>
+                <div className="max-h-64 overflow-y-auto py-1 space-y-0.5">
+                  {LANGUAGE_OPTIONS.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        onLanguageChange(lang.code);
+                        setLangMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition ${
+                        currentLanguage === lang.code
+                          ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold'
+                          : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>{lang.flag}</span>
+                        <span>{lang.nativeName}</span>
+                        <span className="text-[10px] text-slate-400 font-normal">({lang.name})</span>
+                      </span>
+                      {currentLanguage === lang.code && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Notification Button */}
+          <div className="relative">
+            <button
+              onClick={() => setNotificationOpen(!notificationOpen)}
+              className={`p-2 rounded-xl text-xs border transition relative min-h-[40px] min-w-[40px] flex items-center justify-center ${
+                isDarkMode
+                  ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                  : 'bg-slate-100/80 border-slate-200/80 text-slate-700 hover:bg-slate-200/80'
+              }`}
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+            </button>
+
+            {notificationOpen && (
+              <div className={`absolute right-0 mt-2 w-72 rounded-2xl shadow-xl border p-3 z-50 animate-in fade-in ${
+                isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
+              }`}>
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-bold">Notifications</span>
+                  <span className="text-[10px] text-blue-600 font-medium">Clear All</span>
+                </div>
+                <div className="py-2 space-y-2 text-xs">
+                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40">
+                    <p className="font-semibold text-blue-900 dark:text-blue-300">✨ Tamreen V2 Active</p>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                      New mobile-first UI with 8-step wizard & 200+ templates loaded.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Settings / Dark mode */}
+          <div className="relative">
+            <button
+              onClick={() => setSettingsOpen(!settingsOpen)}
+              className={`p-2 rounded-xl text-xs border transition min-h-[40px] min-w-[40px] flex items-center justify-center ${
+                isDarkMode
+                  ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                  : 'bg-slate-100/80 border-slate-200/80 text-slate-700 hover:bg-slate-200/80'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
+            {settingsOpen && (
+              <div className={`absolute right-0 mt-2 w-64 rounded-2xl shadow-xl border p-3 z-50 animate-in fade-in ${
+                isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
+              }`}>
+                <div className="text-xs font-bold pb-2 border-b border-slate-100 dark:border-slate-800">
+                  Settings & Preferences
+                </div>
+                <div className="py-2 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">Dark Mode</span>
+                    <button
+                      onClick={onToggleDarkMode}
+                      className={`p-1.5 rounded-xl border transition flex items-center gap-1 text-xs ${
+                        isDarkMode
+                          ? 'bg-slate-800 border-slate-700 text-amber-300'
+                          : 'bg-slate-100 border-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+                      <span className="text-[10px] font-bold">{isDarkMode ? 'Dark' : 'Light'}</span>
+                    </button>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-[11px] text-slate-500">
+                    <span>AI Engine Status</span>
+                    <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                      Online
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Profile Avatar */}
+          <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-blue-600 to-teal-500 p-0.5 shadow-sm shrink-0">
+            <div className={`w-full h-full rounded-[14px] flex items-center justify-center font-bold text-xs ${
+              isDarkMode ? 'bg-slate-900 text-white' : 'bg-white text-blue-700'
+            }`}>
+              <User className="w-4 h-4" />
+            </div>
+          </div>
         </div>
       </div>
     </header>

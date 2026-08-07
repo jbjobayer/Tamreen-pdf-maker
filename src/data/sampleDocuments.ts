@@ -215,7 +215,6 @@ In 2026, over 74% of enterprise software workloads leverage multi-agent workflow
         callout: {
           type: 'key_takeaway',
           title: 'Executive Takeaway',
-          titleStyle: 'font-semibold text-blue-900',
           text: 'Organizations adopting automated AI publishing and document synthesis report a 68% reduction in knowledge delivery time and a 42% cost savings in external design agency retainer fees.',
         },
       },
