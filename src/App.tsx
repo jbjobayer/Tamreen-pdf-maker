@@ -107,8 +107,14 @@ export default function App() {
   };
 
   const handleExportPDF = async () => {
-    setExportNotice('Generating high-resolution publication PDF...');
+    // If not viewing canvas, switch to canvas view first so elements are rendered
+    if (!isViewingCanvas) {
+      setIsViewingCanvas(true);
+    }
+    setExportNotice('পাবলিকেশন মানের A4 পিডিএফ তৈরি করা হচ্ছে...');
     try {
+      // Small timeout to allow canvas DOM elements to render
+      await new Promise((res) => setTimeout(res, 300));
       await generateDownloadablePDF(currentDoc.title);
     } catch (err) {
       console.error(err);
@@ -160,7 +166,7 @@ export default function App() {
                 className="flex items-center gap-1.5 text-xs font-extrabold text-blue-600 dark:text-blue-400 p-1"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back to App Dashboard</span>
+                <span>ড্যাশবোর্ডে ফিরে যান (Back)</span>
               </button>
               <span className="text-xs font-bold text-slate-500 truncate max-w-[200px]">
                 {currentDoc.title}
