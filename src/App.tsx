@@ -168,9 +168,12 @@ export default function App() {
                 <ArrowLeft className="w-4 h-4" />
                 <span>ড্যাশবোর্ডে ফিরে যান (Back)</span>
               </button>
-              <span className="text-xs font-bold text-slate-500 truncate max-w-[200px]">
-                {currentDoc.title}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-500 hidden sm:inline">ডক্যুমেন্ট:</span>
+                <span className="text-xs font-extrabold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-xl border border-blue-200/80 dark:border-blue-800/60 truncate max-w-[220px] sm:max-w-[320px]">
+                  {currentDoc.title || 'শিরোনামহীন ডক্যুমেন্ট'}
+                </span>
+              </div>
             </div>
 
             <StudioCanvas

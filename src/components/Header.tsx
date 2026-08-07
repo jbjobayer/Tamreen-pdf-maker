@@ -57,13 +57,16 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-base tracking-tight font-inter text-slate-900 dark:text-white">
-                Tamreen <span className="text-blue-600">AI PDF</span>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-blue-700 dark:text-blue-400">
+                Tamreen
+              </span>
+              <span className="px-2.5 py-0.5 rounded-lg text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm tracking-wider">
+                AI PDF
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block font-medium">
-              ChatGPT + Canva + Notion + Apple Design
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 hidden sm:block font-bold">
+              এআই পাবলিকেশন ও এ৪ ডক্যুমেন্ট স্টুডিও
             </p>
           </div>
         </div>

@@ -373,7 +373,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                 <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 font-mono">
                   {document.documentType} • A4 WORD PAPER CANVAS
                 </span>
-                <h2 className="font-extrabold text-slate-900 dark:text-white text-base">
+                <h2 className="font-extrabold text-blue-900 dark:text-blue-100 text-base sm:text-lg">
                   {document.title}
                 </h2>
               </div>
