@@ -1,0 +1,6 @@
+{
+  "name": "AI PDF Studio",
+  "description": "Create publication-quality documents with AI",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
