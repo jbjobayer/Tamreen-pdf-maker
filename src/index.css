@@ -35,50 +35,50 @@
 .neu-flat {
   background: #eaf0f8;
   box-shadow: 6px 6px 14px #c8d1e2, -6px -6px 14px #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .neu-card {
   background: #eaf0f8;
-  box-shadow: 5px 5px 12px #c2cbdd, -5px -5px 12px #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 5px 5px 12px #c8d1e2, -5px -5px 12px #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .neu-button {
   background: #eaf0f8;
-  box-shadow: 4px 4px 10px #c2cbdd, -4px -4px 10px #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 4px 4px 10px #c8d1e2, -4px -4px 10px #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
   transition: all 0.2s ease-in-out;
 }
 
 .neu-button:hover {
-  background: #eaf0f8;
-  box-shadow: 6px 6px 14px #b8c3d8, -6px -6px 14px #ffffff;
+  background: #f2f7fd;
+  box-shadow: 5px 5px 12px #bdc7da, -5px -5px 12px #ffffff;
   transform: translateY(-1px);
 }
 
 .neu-button:active, .neu-pressed {
   background: #eaf0f8;
-  box-shadow: inset 3px 3px 6px #c2cbdd, inset -3px -3px 6px #ffffff;
+  box-shadow: inset 3px 3px 6px #c8d1e2, inset -3px -3px 6px #ffffff;
   border: 1px solid rgba(200, 209, 226, 0.5);
 }
 
 .neu-input {
   background: #eaf0f8;
-  box-shadow: inset 3px 3px 6px #c2cbdd, inset -3px -3px 6px #ffffff;
+  box-shadow: inset 3px 3px 6px #c8d1e2, inset -3px -3px 6px #ffffff;
   border: 1px solid rgba(215, 225, 240, 0.8);
 }
 
 .neu-primary-btn {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  box-shadow: 4px 4px 12px #b8c3d8, -4px -4px 12px #ffffff;
+  box-shadow: 4px 4px 12px #c8d1e2, -4px -4px 12px #ffffff;
   color: #ffffff;
   transition: all 0.2s ease;
 }
 
 .neu-primary-btn:hover {
   background: linear-gradient(135deg, #1d4ed8, #1e40af);
-  box-shadow: 6px 6px 16px #aeb9ce, -6px -6px 16px #ffffff;
+  box-shadow: 5px 5px 14px #bdc7da, -5px -5px 14px #ffffff;
   transform: translateY(-1px);
 }
 

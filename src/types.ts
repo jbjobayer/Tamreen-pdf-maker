@@ -190,6 +190,7 @@ export interface CustomizationSettings {
   pageSize: 'A4' | 'Letter' | 'Executive' | 'B5 Pocket';
   margins: 'compact' | 'normal' | 'wide';
   lineHeight: number;
+  textAlign?: 'left' | 'center' | 'right' | 'justify';
   paragraphSpacing: number;
   columns: 1 | 2 | 3;
   headerText: string;

@@ -116,7 +116,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="pt-3 flex flex-wrap items-center gap-3">
             <button
               onClick={() => onOpenCreateModal()}
-              className="neu-primary-btn px-6 py-3.5 rounded-2xl font-black text-base flex items-center gap-2.5 shadow-lg min-h-[52px] active:scale-95 touch-manipulation cursor-pointer"
+              className="neu-primary-btn px-6 py-3.5 rounded-2xl font-black text-base flex items-center gap-2.5 min-h-[52px] active:scale-95 touch-manipulation cursor-pointer"
             >
               <PlusCircle className="w-5 h-5 text-amber-300" />
               <span>আমি কী বানাবো</span>

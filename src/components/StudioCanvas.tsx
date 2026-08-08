@@ -15,6 +15,16 @@ import {
   Edit3,
   Sliders,
   Maximize2,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  ArrowUpDown,
+  Palette,
+  Layers,
+  BookOpen,
+  ChevronDown,
+  FileText,
 } from 'lucide-react';
 import { DocumentData, DocumentSection, LayoutSettings, CustomizationSettings } from '../types';
 import { TemplateGalleryModal } from './TemplateGalleryModal';
@@ -22,6 +32,157 @@ import { PremiumTemplate } from '../data/templateLibrary';
 import { SmartLayoutEngine, SmartLayoutConfig } from './SmartLayoutEngine';
 import { FormattedContent } from './FormattedContent';
 import { generateDownloadablePDF, triggerPrintDialog } from './PDFExporter';
+
+export interface DocumentStylePreset {
+  id: string;
+  name: string;
+  nameBn: string;
+  category: string;
+  description: string;
+  badge: string;
+  primaryFont: string;
+  headingFont: string;
+  fontSize: number;
+  lineHeight: number;
+  textAlign: 'left' | 'center' | 'right' | 'justify';
+  accentColor: string;
+  headingColor: string;
+  bodyColor: string;
+  marginSize: 'compact' | 'normal' | 'wide';
+  columnCount: 1 | 2;
+  coverStyle?: 'minimalist' | 'ornate' | 'corporate' | 'academic' | 'islamic_manuscript' | 'hardcover';
+  headerText?: string;
+  footerText?: string;
+}
+
+export const DOCUMENT_STYLE_PRESETS: DocumentStylePreset[] = [
+  {
+    id: 'modern_academic',
+    name: 'Modern Academic',
+    nameBn: 'আধুনিক একাডেমিক',
+    category: 'ACADEMIC',
+    description: 'বিশ্ববিদ্যালয় ও গবেষণা সাময়িকীর জন্য মানসম্মত লেআউট ও ক্লাসিক টাইপোগ্রাফি',
+    badge: 'OXFORD NAVY',
+    primaryFont: 'Noto Serif Bengali',
+    headingFont: 'Cinzel',
+    fontSize: 14,
+    lineHeight: 1.6,
+    textAlign: 'justify',
+    accentColor: '#1e40af',
+    headingColor: '#172554',
+    bodyColor: '#1e293b',
+    marginSize: 'normal',
+    columnCount: 1,
+    coverStyle: 'academic',
+    headerText: 'তামরীন একাডেমিক পাবলিকেশন',
+    footerText: 'Academic Research Edition',
+  },
+  {
+    id: 'simple_memo',
+    name: 'Simple Memo',
+    nameBn: 'সহজ মেমো / সারসংক্ষেপ',
+    category: 'NOTE',
+    description: 'অফিসিয়াল নির্দেশিকা, নীতি ও সংক্ষিপ্ত নোটিশের জন্য পরিষ্কার সানস-সেরিফ',
+    badge: 'SLATE CLEAN',
+    primaryFont: 'Hind Siliguri',
+    headingFont: 'Hind Siliguri',
+    fontSize: 12,
+    lineHeight: 1.45,
+    textAlign: 'left',
+    accentColor: '#0f172a',
+    headingColor: '#020617',
+    bodyColor: '#334155',
+    marginSize: 'compact',
+    columnCount: 1,
+    coverStyle: 'minimalist',
+    headerText: 'অফিসিয়াল স্মারকপত্র',
+    footerText: 'CONFIDENTIAL MEMO',
+  },
+  {
+    id: 'islamic_manuscript',
+    name: 'Islamic Manuscript',
+    nameBn: 'ইসলামিক ম্যানুস্ক্রিপ্ট / কিতাব',
+    category: 'ISLAMIC',
+    description: 'হাদিস, তাফসির ও আরবি-বাংলা রাজকীয় ধ্রুপদী কিতাবের মার্জিত অলঙ্কৃত স্টাইল',
+    badge: 'EMERALD & GOLD',
+    primaryFont: 'Noto Naskh Arabic',
+    headingFont: 'Tiro Bangla',
+    fontSize: 16,
+    lineHeight: 1.8,
+    textAlign: 'justify',
+    accentColor: '#065f46',
+    headingColor: '#064e3b',
+    bodyColor: '#0f172a',
+    marginSize: 'wide',
+    columnCount: 1,
+    coverStyle: 'islamic_manuscript',
+    headerText: 'আত্তামরীন ইসলামিক পাবলিকেশন',
+    footerText: 'دار التمرين للطباعة والنشر',
+  },
+  {
+    id: 'classic_book',
+    name: 'Classic Book',
+    nameBn: 'ক্লাসিক বুক / গ্রন্থ',
+    category: 'BOOK',
+    description: 'স্মারকগ্রন্থ, সাহিত্য ও প্রাতিষ্ঠানিক পুস্তকের জন্য প্লেফেয়ার টাইপোগ্রাফি',
+    badge: 'WARM PARCHMENT',
+    primaryFont: 'Playfair Display',
+    headingFont: 'Playfair Display',
+    fontSize: 13,
+    lineHeight: 1.7,
+    textAlign: 'justify',
+    accentColor: '#78350f',
+    headingColor: '#451a03',
+    bodyColor: '#1c1917',
+    marginSize: 'normal',
+    columnCount: 1,
+    coverStyle: 'hardcover',
+    headerText: 'গ্রন্থ প্রকাশনা সিরিজ',
+    footerText: 'Classic Library Edition',
+  },
+  {
+    id: 'corporate_report',
+    name: 'Corporate Report',
+    nameBn: 'করপোরেট বিজনেস রিপোর্ট',
+    category: 'BUSINESS',
+    description: 'বাৎসরিক প্রতিবেদন, বাজার বিশ্লেষণ ও প্রফেশনাল তথ্যের দ্বৈত কলাম লেআউট',
+    badge: 'CORPORATE BLUE',
+    primaryFont: 'Hind Siliguri',
+    headingFont: 'Cinzel',
+    fontSize: 11.5,
+    lineHeight: 1.5,
+    textAlign: 'justify',
+    accentColor: '#2563eb',
+    headingColor: '#1e3a8a',
+    bodyColor: '#1e293b',
+    marginSize: 'compact',
+    columnCount: 2,
+    coverStyle: 'corporate',
+    headerText: 'বার্ষিক করপোরেট প্রতিবেদন',
+    footerText: 'Executive Summary Report',
+  },
+  {
+    id: 'minimalist_handout',
+    name: 'Minimalist Handout',
+    nameBn: 'হ্যান্ডআউট / লেকচার শিট',
+    category: 'MINIMAL',
+    description: 'ক্লাস নোট, প্রশ্নপত্র ও শিক্ষার্থীদের স্টাডি গাইডের জন্য লাইট কমপ্যাক্ট ফরম্যাট',
+    badge: 'MONOCHROME',
+    primaryFont: 'Hind Siliguri',
+    headingFont: 'Hind Siliguri',
+    fontSize: 11,
+    lineHeight: 1.4,
+    textAlign: 'left',
+    accentColor: '#374151',
+    headingColor: '#111827',
+    bodyColor: '#1f2937',
+    marginSize: 'compact',
+    columnCount: 1,
+    coverStyle: 'minimalist',
+    headerText: 'ক্লাস নোট ও লেকচার শিট',
+    footerText: 'Student Handout Edition',
+  },
+];
 
 interface StudioCanvasProps {
   document: DocumentData;
@@ -38,6 +199,8 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
   const [viewMode, setViewMode] = useState<'paper' | 'edit' | 'settings'>('paper');
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [activeStylePresetId, setActiveStylePresetId] = useState<string>('modern_academic');
+  const [isStyleMenuOpen, setIsStyleMenuOpen] = useState<boolean>(false);
 
   // Auto-Scale Logic for Mobile Screen Fit
   const containerRef = useRef<HTMLDivElement>(null);
@@ -63,11 +226,30 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
     headingFont: document.primaryFont || 'Noto Serif Bengali',
     fontSize: 15,
     lineHeight: 1.6,
+    textAlign: 'justify',
     accentColor: document.accentColor || '#2563eb',
     hasHeaderFooter: true,
     headerText: document.headerText || 'তামরীন একাডেমিক পাবলিকেশন',
     footerText: document.footerText || 'A4 Publication Grade Edition',
     marginSize: 'normal',
+    titleFontSize: 30,
+    chapterFontSize: 22,
+    headingFontSize: 18,
+    subHeadingFontSize: 16,
+    bodyFontSize: 12,
+    footnoteFontSize: 9,
+    fontFamily: document.primaryFont || 'Noto Serif Bengali',
+    bodyColor: '#1e293b',
+    headingColor: '#0f172a',
+    backgroundColor: '#ffffff',
+    pageSize: 'A4',
+    margins: 'normal',
+    paragraphSpacing: 1.2,
+    columns: document.columnCount || 1,
+    pageNumberStyle: 'simple',
+    showWatermark: true,
+    watermarkText: 'At-Tamreen Academy',
+    watermarkOpacity: 0.08,
   });
 
   const isRTL = document.direction === 'rtl' || document.language === 'ar';
@@ -149,6 +331,46 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
       headerText: updatedCustomization.headerText,
       footerText: updatedCustomization.footerText,
     }));
+  };
+
+  const applyDocumentStylePreset = (preset: DocumentStylePreset) => {
+    setActiveStylePresetId(preset.id);
+
+    setLayoutSettings((prev) => ({
+      ...prev,
+      primaryFont: preset.primaryFont,
+      headingFont: preset.headingFont,
+      fontFamily: preset.primaryFont,
+      headingFontFamily: preset.headingFont,
+      fontSize: preset.fontSize,
+      lineHeight: preset.lineHeight,
+      textAlign: preset.textAlign,
+      accentColor: preset.accentColor,
+      headingColor: preset.headingColor,
+      bodyColor: preset.bodyColor,
+      marginSize: preset.marginSize,
+      columnCount: preset.columnCount,
+      columns: preset.columnCount,
+      headerText: preset.headerText || prev.headerText,
+      footerText: preset.footerText || prev.footerText,
+    }));
+
+    setDocument((prev) => ({
+      ...prev,
+      primaryFont: preset.primaryFont,
+      accentColor: preset.accentColor,
+      columnCount: preset.columnCount,
+      headerText: preset.headerText || prev.headerText,
+      footerText: preset.footerText || prev.footerText,
+      coverData: prev.coverData
+        ? {
+            ...prev.coverData,
+            coverStyle: preset.coverStyle || prev.coverData.coverStyle,
+          }
+        : prev.coverData,
+    }));
+
+    setIsStyleMenuOpen(false);
   };
 
   // Section Handlers
@@ -265,9 +487,95 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
 
             {/* Quick Action Buttons */}
             <div className="flex items-center gap-2">
+              {/* Document Styles Menu Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsStyleMenuOpen(!isStyleMenuOpen)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold transition neu-button ${
+                    isStyleMenuOpen
+                      ? 'text-blue-600 dark:text-blue-400 font-black border-blue-400/50 neu-pressed'
+                      : 'text-slate-700 dark:text-slate-200'
+                  }`}
+                  title="ডকুমেন্ট স্টাইল ও টেমপ্লেট নির্বাচন করুন"
+                >
+                  <Palette className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                  <span className="font-extrabold hidden sm:inline">ডকুমেন্ট স্টাইল</span>
+                  <span className="font-extrabold sm:hidden">স্টাইল</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${isStyleMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu Popover */}
+                {isStyleMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsStyleMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-80 sm:w-96 neu-card p-3 rounded-3xl z-50 shadow-2xl space-y-2 border border-slate-200/80 dark:border-slate-800/80 max-h-[80vh] overflow-y-auto animate-in fade-in slide-in-from-top-2">
+                      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200/60 dark:border-slate-800/60">
+                        <div className="flex items-center gap-2">
+                          <Layers className="w-4 h-4 text-blue-600" />
+                          <span className="font-extrabold text-xs text-slate-900 dark:text-white">
+                            ডকুমেন্ট স্টাইল প্রি-সেট (Document Styles)
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400">
+                          {DOCUMENT_STYLE_PRESETS.length} টি স্টাইল
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        {DOCUMENT_STYLE_PRESETS.map((preset) => {
+                          const isActive = activeStylePresetId === preset.id;
+                          return (
+                            <button
+                              key={preset.id}
+                              onClick={() => applyDocumentStylePreset(preset)}
+                              className={`w-full text-left p-3 rounded-2xl transition flex items-start justify-between gap-3 ${
+                                isActive
+                                  ? 'neu-pressed border border-blue-500/40 bg-blue-50/50 dark:bg-blue-950/30'
+                                  : 'neu-flat hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                              }`}
+                            >
+                              <div className="space-y-1 flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                                    style={{ backgroundColor: preset.accentColor }}
+                                  />
+                                  <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate">
+                                    {preset.nameBn}
+                                  </span>
+                                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0">
+                                    {preset.badge}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 leading-snug">
+                                  {preset.description}
+                                </p>
+                                <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
+                                  <span>ফন্ট: {preset.primaryFont}</span>
+                                  <span>•</span>
+                                  <span>সাইজ: {preset.fontSize}pt</span>
+                                </div>
+                              </div>
+                              {isActive && (
+                                <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                                  <Check className="w-3.5 h-3.5" />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
               <button
                 onClick={() => setIsTemplateModalOpen(true)}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold neu-button text-purple-700 dark:text-purple-300"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold neu-button text-purple-700 dark:text-purple-300"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 <span>টেমপ্লেট গ্যালারি</span>
@@ -292,7 +600,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
             </div>
           </div>
 
-          {/* Row 2: Formatting Strip (Neumorphic Inset Inputs & Buttons) */}
+          {/* Row 2: Text Formatting Toolbar Strip (Text Alignment, Font Size, Line Spacing) */}
           <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-200/50 dark:border-slate-800/50 text-xs">
             {/* Font Family Selector */}
             <div className="flex items-center gap-1.5 neu-pressed px-3 py-1.5 rounded-2xl">
@@ -313,28 +621,110 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
               </select>
             </div>
 
-            {/* Font Size Selector */}
+            {/* Font Size Control */}
             <div className="flex items-center gap-1.5 neu-pressed px-2.5 py-1 rounded-2xl">
-              <span className="text-[11px] font-extrabold text-slate-500">সাইজ:</span>
+              <span className="text-[11px] font-extrabold text-slate-500">ফন্ট সাইজ:</span>
               <button
                 onClick={() =>
-                  setLayoutSettings((prev) => ({ ...prev, fontSize: Math.max(12, prev.fontSize - 1) }))
+                  setLayoutSettings((prev) => ({ ...prev, fontSize: Math.max(10, prev.fontSize - 1) }))
                 }
-                className="w-6 h-6 rounded-lg neu-button flex items-center justify-center font-black text-slate-700 dark:text-slate-200"
+                className="w-6 h-6 rounded-lg neu-button flex items-center justify-center font-black text-slate-700 dark:text-slate-200 active:scale-95"
+                title="সাইজ কমান"
               >
                 -
               </button>
-              <span className="font-extrabold text-blue-600 dark:text-blue-400 min-w-[28px] text-center">
-                {layoutSettings.fontSize}pt
-              </span>
+              <select
+                value={layoutSettings.fontSize}
+                onChange={(e) =>
+                  setLayoutSettings((prev) => ({ ...prev, fontSize: Number(e.target.value) }))
+                }
+                className="bg-transparent font-extrabold text-blue-600 dark:text-blue-400 focus:outline-none cursor-pointer text-center text-xs"
+              >
+                {[10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 28].map((size) => (
+                  <option key={size} value={size}>
+                    {size} pt
+                  </option>
+                ))}
+              </select>
               <button
                 onClick={() =>
-                  setLayoutSettings((prev) => ({ ...prev, fontSize: Math.min(24, prev.fontSize + 1) }))
+                  setLayoutSettings((prev) => ({ ...prev, fontSize: Math.min(32, prev.fontSize + 1) }))
                 }
-                className="w-6 h-6 rounded-lg neu-button flex items-center justify-center font-black text-slate-700 dark:text-slate-200"
+                className="w-6 h-6 rounded-lg neu-button flex items-center justify-center font-black text-slate-700 dark:text-slate-200 active:scale-95"
+                title="সাইজ বাড়ান"
               >
                 +
               </button>
+            </div>
+
+            {/* Text Alignment Controls */}
+            <div className="flex items-center gap-1 neu-pressed p-1 rounded-2xl">
+              <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 px-1.5 hidden sm:inline">
+                অ্যালাইনমেন্ট:
+              </span>
+              <button
+                onClick={() => setLayoutSettings((prev) => ({ ...prev, textAlign: 'left' }))}
+                className={`p-1.5 rounded-xl transition ${
+                  layoutSettings.textAlign === 'left'
+                    ? 'neu-button text-blue-600 dark:text-blue-400 font-black'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+                title="বামে অ্যালাইন করুন (Left Align)"
+              >
+                <AlignLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setLayoutSettings((prev) => ({ ...prev, textAlign: 'center' }))}
+                className={`p-1.5 rounded-xl transition ${
+                  layoutSettings.textAlign === 'center'
+                    ? 'neu-button text-blue-600 dark:text-blue-400 font-black'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+                title="মাঝে অ্যালাইন করুন (Center Align)"
+              >
+                <AlignCenter className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setLayoutSettings((prev) => ({ ...prev, textAlign: 'right' }))}
+                className={`p-1.5 rounded-xl transition ${
+                  layoutSettings.textAlign === 'right'
+                    ? 'neu-button text-blue-600 dark:text-blue-400 font-black'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+                title="ডানে অ্যালাইন করুন (Right Align)"
+              >
+                <AlignRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setLayoutSettings((prev) => ({ ...prev, textAlign: 'justify' }))}
+                className={`p-1.5 rounded-xl transition ${
+                  layoutSettings.textAlign === 'justify' || !layoutSettings.textAlign
+                    ? 'neu-button text-blue-600 dark:text-blue-400 font-black'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+                title="সমান / জাস্টিফাই অ্যালাইন করুন (Justify)"
+              >
+                <AlignJustify className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Line Spacing / Line Height Control */}
+            <div className="flex items-center gap-1.5 neu-pressed px-2.5 py-1 rounded-2xl">
+              <ArrowUpDown className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+              <span className="text-[11px] font-extrabold text-slate-500 hidden sm:inline">লাইন স্পেস:</span>
+              <select
+                value={layoutSettings.lineHeight}
+                onChange={(e) =>
+                  setLayoutSettings((prev) => ({ ...prev, lineHeight: Number(e.target.value) }))
+                }
+                className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+              >
+                <option value={1.2}>১.২ (টাইট)</option>
+                <option value={1.4}>১.৪ (কমপ্যাক্ট)</option>
+                <option value={1.6}>১.৬ (ডিফল্ট)</option>
+                <option value={1.8}>১.৮ (খোলামেলা)</option>
+                <option value={2.0}>২.০ (দ্বিগুণ)</option>
+              </select>
             </div>
 
             {/* Column Layout Switcher */}
@@ -345,7 +735,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   layoutSettings.columnCount === 1 ? 'neu-button text-blue-600 font-extrabold' : 'text-slate-500'
                 }`}
               >
-                একক কলাম
+                ১ কলাম
               </button>
               <button
                 onClick={() => setLayoutSettings((prev) => ({ ...prev, columnCount: 2 }))}
@@ -353,7 +743,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   layoutSettings.columnCount === 2 ? 'neu-button text-blue-600 font-extrabold' : 'text-slate-500'
                 }`}
               >
-                দ্বৈত কলাম (IEEE)
+                ২ কলাম (IEEE)
               </button>
             </div>
 
@@ -366,7 +756,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                 }`}
                 title="স্ক্রিনে সম্পূর্ণ পেপার ফিট করুন"
               >
-                মোবাইল ফিট ({(autoScale * 100).toFixed(0)}%)
+                ফিট ({(autoScale * 100).toFixed(0)}%)
               </button>
               <button
                 onClick={() => setUserZoom(0.85)}
@@ -444,6 +834,21 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                       className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between overflow-hidden relative border border-slate-300 rounded-sm`}
                       style={{ direction: isRTL ? 'rtl' : 'ltr' }}
                     >
+                      {/* Light Watermark Overlay */}
+                      {layoutSettings.showWatermark && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 select-none overflow-hidden">
+                          <div
+                            className="font-extrabold text-3xl sm:text-4xl md:text-5xl tracking-widest text-center transform -rotate-30 uppercase select-none font-sans"
+                            style={{
+                              color: '#1e293b',
+                              opacity: layoutSettings.watermarkOpacity ?? 0.08,
+                            }}
+                          >
+                            {layoutSettings.watermarkText || 'At-Tamreen Academy'}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Decorative Header Border */}
                       <div
                         className="absolute top-0 left-0 right-0 h-3.5"
@@ -528,9 +933,24 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   {/* ----------------- PAGE 2: TABLE OF CONTENTS ----------------- */}
                   {document.tableOfContents && document.tableOfContents.length > 0 && (
                     <div
-                      className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative border border-slate-300 rounded-sm`}
+                      className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative border border-slate-300 rounded-sm overflow-hidden`}
                       style={{ direction: isRTL ? 'rtl' : 'ltr' }}
                     >
+                      {/* Light Watermark Overlay */}
+                      {layoutSettings.showWatermark && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 select-none overflow-hidden">
+                          <div
+                            className="font-extrabold text-3xl sm:text-4xl md:text-5xl tracking-widest text-center transform -rotate-30 uppercase select-none font-sans"
+                            style={{
+                              color: '#1e293b',
+                              opacity: layoutSettings.watermarkOpacity ?? 0.08,
+                            }}
+                          >
+                            {layoutSettings.watermarkText || 'At-Tamreen Academy'}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Header */}
                       <div className="border-b border-slate-200 pb-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase tracking-wider">
                         <span>{layoutSettings.headerText}</span>
@@ -571,9 +991,24 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
 
                   {/* ----------------- PAGE 3+: CONTENT BODY (A4 CANVAS) ----------------- */}
                   <div
-                    className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative border border-slate-300 rounded-sm`}
+                    className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative border border-slate-300 rounded-sm overflow-hidden`}
                     style={{ direction: isRTL ? 'rtl' : 'ltr' }}
                   >
+                    {/* Light Watermark Overlay */}
+                    {layoutSettings.showWatermark && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 select-none overflow-hidden">
+                        <div
+                          className="font-extrabold text-3xl sm:text-4xl md:text-5xl tracking-widest text-center transform -rotate-30 uppercase select-none font-sans"
+                          style={{
+                            color: '#1e293b',
+                            opacity: layoutSettings.watermarkOpacity ?? 0.08,
+                          }}
+                        >
+                          {layoutSettings.watermarkText || 'At-Tamreen Academy'}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Running Header */}
                     <div className="border-b border-slate-200 pb-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase tracking-wider">
                       <span>{document.title}</span>
@@ -613,6 +1048,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                             style={{
                               fontSize: `${layoutSettings.fontSize}px`,
                               lineHeight: layoutSettings.lineHeight,
+                              textAlign: layoutSettings.textAlign || 'justify',
                             }}
                           >
                             <FormattedContent
@@ -806,7 +1242,12 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                         rows={6}
                         value={sec.content}
                         onChange={(e) => handleUpdateSectionContent(sec.id, e.target.value)}
-                        className="w-full p-3.5 rounded-xl neu-input text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-bengali resize-y"
+                        style={{
+                          fontSize: `${Math.max(12, layoutSettings.fontSize - 1)}px`,
+                          lineHeight: layoutSettings.lineHeight,
+                          textAlign: layoutSettings.textAlign === 'justify' ? 'left' : layoutSettings.textAlign || 'left',
+                        }}
+                        className="w-full p-3.5 rounded-xl neu-input text-slate-800 dark:text-slate-200 leading-relaxed font-bengali resize-y"
                       />
                     </div>
                   </div>
@@ -819,6 +1260,192 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
         {/* VIEW 3: LAYOUT & TOOLS MODE (NEUMORPHIC STYLE) */}
         {viewMode === 'settings' && (
           <div className="w-full max-w-4xl space-y-6 py-4 animate-in fade-in">
+            {/* Predefined Document Styles Card */}
+            <div className="neu-card p-6 sm:p-8 rounded-3xl space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+                    <Palette className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                      ডকুমেন্ট স্টাইল ও টেমপ্লেট গ্যালারি (Document Styles)
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      এক ক্লিকে আপনার ডকুমেন্টের ফন্ট ফ্যামিলি, হেডিং, লাইন স্পেসিং ও কালার স্কিম পরিবর্তন করুন।
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {DOCUMENT_STYLE_PRESETS.map((preset) => {
+                  const isActive = activeStylePresetId === preset.id;
+                  return (
+                    <div
+                      key={preset.id}
+                      onClick={() => applyDocumentStylePreset(preset)}
+                      className={`p-4 rounded-2xl cursor-pointer transition-all flex flex-col justify-between space-y-3 relative group ${
+                        isActive
+                          ? 'neu-pressed border-2 border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 shadow-md'
+                          : 'neu-flat hover:translate-y-[-2px]'
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold text-white"
+                            style={{ backgroundColor: preset.accentColor }}
+                          >
+                            {preset.badge}
+                          </span>
+                          {isActive && (
+                            <span className="flex items-center gap-1 text-[10px] font-black text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 rounded-full">
+                              <Check className="w-3 h-3" /> সক্রিয়
+                            </span>
+                          )}
+                        </div>
+
+                        <div>
+                          <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">
+                            {preset.nameBn}
+                          </h4>
+                          <span className="text-[10px] font-mono text-slate-400 block">
+                            {preset.name}
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
+                          {preset.description}
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between text-[11px] font-bold">
+                        <span className="text-slate-600 dark:text-slate-300">
+                          ফন্ট: {preset.primaryFont}
+                        </span>
+                        <button
+                          type="button"
+                          className={`px-3 py-1 rounded-xl text-xs font-black transition ${
+                            isActive
+                              ? 'bg-blue-600 text-white'
+                              : 'neu-button text-slate-700 dark:text-slate-200 group-hover:text-blue-600'
+                          }`}
+                        >
+                          {isActive ? 'সক্রিয় স্টাইল' : 'স্টাইল প্রয়োগ'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Watermark & Export Page Settings Card */}
+            <div className="neu-card p-6 sm:p-8 rounded-3xl space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                    <Sparkles className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                      পিডিএফ ওয়াটারমার্ক ও পেজ ব্র্যান্ডিং (PDF Watermark Settings)
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      এক্সপোর্ট করা পিডিএফ পেজে 'At-Tamreen Academy' লাইট ওয়াটারমার্ক যোগ বা কাস্টমাইজ করুন।
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Watermark Toggle */}
+                <div className="flex items-center justify-between p-4.5 rounded-2xl neu-flat">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200 block">
+                      পিডিএফ ওয়াটারমার্ক চালু (Enable Watermark)
+                    </span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      পিডিএফের পেছনে হালকা ওয়াটারমার্ক ব্র্যান্ডিং দেখাবে
+                    </span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
+                    <input
+                      type="checkbox"
+                      checked={layoutSettings.showWatermark}
+                      onChange={(e) =>
+                        setLayoutSettings((prev) => ({ ...prev, showWatermark: e.target.checked }))
+                      }
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+
+                {/* Watermark Text Input */}
+                <div className="space-y-1.5 p-4.5 rounded-2xl neu-flat">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                    ওয়াটারমার্ক টেক্সট (Watermark Text):
+                  </label>
+                  <input
+                    type="text"
+                    disabled={!layoutSettings.showWatermark}
+                    value={layoutSettings.watermarkText}
+                    onChange={(e) =>
+                      setLayoutSettings((prev) => ({ ...prev, watermarkText: e.target.value }))
+                    }
+                    className="w-full p-2.5 rounded-xl neu-input font-bold text-xs text-slate-900 dark:text-white disabled:opacity-40"
+                    placeholder="At-Tamreen Academy"
+                  />
+                </div>
+              </div>
+
+              {/* Watermark Opacity Presets */}
+              {layoutSettings.showWatermark && (
+                <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-slate-800/50">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                    ওয়াটারমার্ক গাঢ়তা (Watermark Opacity):
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setLayoutSettings((prev) => ({ ...prev, watermarkOpacity: 0.05 }))}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                        layoutSettings.watermarkOpacity === 0.05
+                          ? 'neu-button text-blue-600 dark:text-blue-400 font-black'
+                          : 'neu-flat text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      খুবই হালকা (5%)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLayoutSettings((prev) => ({ ...prev, watermarkOpacity: 0.08 }))}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                        layoutSettings.watermarkOpacity === 0.08
+                          ? 'neu-button text-blue-600 dark:text-blue-400 font-black'
+                          : 'neu-flat text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      স্ট্যান্ডার্ড (8% - ডিফল্ট)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLayoutSettings((prev) => ({ ...prev, watermarkOpacity: 0.14 }))}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                        layoutSettings.watermarkOpacity === 0.14
+                          ? 'neu-button text-blue-600 dark:text-blue-400 font-black'
+                          : 'neu-flat text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      স্পষ্ট (14%)
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="neu-card p-6 sm:p-8 rounded-3xl space-y-6">
               <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800/60 pb-3">
                 <Sliders className="w-5 h-5 text-blue-600 dark:text-blue-400" />
