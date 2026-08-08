@@ -4,12 +4,16 @@ interface FormattedContentProps {
   content: string;
   className?: string;
   accentColor?: string;
+  headingColor?: string;
+  bodyColor?: string;
 }
 
 export const FormattedContent: React.FC<FormattedContentProps> = ({
   content,
   className = '',
   accentColor = '#2563eb',
+  headingColor,
+  bodyColor,
 }) => {
   if (!content) return null;
 
@@ -23,7 +27,7 @@ export const FormattedContent: React.FC<FormattedContentProps> = ({
     if (currentList) {
       if (currentList.type === 'ul') {
         elements.push(
-          <ul key={`ul-${elements.length}`} className="my-2.5 space-y-1.5 pl-4 list-disc text-slate-800">
+          <ul key={`ul-${elements.length}`} className="my-2.5 space-y-1.5 pl-4 list-disc" style={{ color: bodyColor || undefined }}>
             {currentList.items.map((item, idx) => (
               <li key={idx} className="leading-relaxed pl-1">
                 {renderInlineFormatted(item)}
@@ -33,7 +37,7 @@ export const FormattedContent: React.FC<FormattedContentProps> = ({
         );
       } else {
         elements.push(
-          <ol key={`ol-${elements.length}`} className="my-2.5 space-y-1.5 pl-4 list-decimal text-slate-800">
+          <ol key={`ol-${elements.length}`} className="my-2.5 space-y-1.5 pl-4 list-decimal" style={{ color: bodyColor || undefined }}>
             {currentList.items.map((item, idx) => (
               <li key={idx} className="leading-relaxed pl-1 font-medium">
                 {renderInlineFormatted(item)}
@@ -53,21 +57,21 @@ export const FormattedContent: React.FC<FormattedContentProps> = ({
     return parts.map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return (
-          <strong key={index} className="font-extrabold text-slate-900">
+          <strong key={index} className="font-extrabold" style={{ color: headingColor || bodyColor || undefined }}>
             {part.slice(2, -2)}
           </strong>
         );
       }
       if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
         return (
-          <em key={index} className="italic text-slate-800">
+          <em key={index} className="italic">
             {part.slice(1, -1)}
           </em>
         );
       }
       if (part.startsWith('`') && part.endsWith('`')) {
         return (
-          <code key={index} className="px-1.5 py-0.5 rounded bg-slate-100 text-blue-700 font-mono text-[11px]">
+          <code key={index} className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-blue-700 dark:text-blue-300 font-mono text-[11px]">
             {part.slice(1, -1)}
           </code>
         );
@@ -91,19 +95,19 @@ export const FormattedContent: React.FC<FormattedContentProps> = ({
       const text = trimmed.replace(/^#+\s*/, '');
       if (level === 1) {
         elements.push(
-          <h2 key={index} className="text-xl font-extrabold mt-4 mb-2 text-slate-900 tracking-tight" style={{ color: accentColor }}>
+          <h2 key={index} className="text-xl font-extrabold mt-4 mb-2 tracking-tight" style={{ color: headingColor || accentColor }}>
             {renderInlineFormatted(text)}
           </h2>
         );
       } else if (level === 2) {
         elements.push(
-          <h3 key={index} className="text-lg font-bold mt-3 mb-1.5 text-slate-900">
+          <h3 key={index} className="text-lg font-bold mt-3 mb-1.5" style={{ color: headingColor || accentColor }}>
             {renderInlineFormatted(text)}
           </h3>
         );
       } else {
         elements.push(
-          <h4 key={index} className="text-base font-semibold mt-2 mb-1 text-slate-800">
+          <h4 key={index} className="text-base font-semibold mt-2 mb-1" style={{ color: headingColor || undefined }}>
             {renderInlineFormatted(text)}
           </h4>
         );
@@ -140,7 +144,7 @@ export const FormattedContent: React.FC<FormattedContentProps> = ({
       flushList();
       const quoteText = trimmed.replace(/^>\s*/, '');
       elements.push(
-        <blockquote key={index} className="my-3 p-3.5 border-l-4 rounded-r-xl bg-slate-50 text-slate-700 italic text-sm" style={{ borderColor: accentColor }}>
+        <blockquote key={index} className="my-3 p-3.5 border-l-4 rounded-r-xl bg-slate-50 dark:bg-slate-900/80 italic text-sm" style={{ borderColor: accentColor, color: bodyColor || undefined }}>
           {renderInlineFormatted(quoteText)}
         </blockquote>
       );
@@ -150,7 +154,7 @@ export const FormattedContent: React.FC<FormattedContentProps> = ({
     // Standard paragraph line
     flushList();
     elements.push(
-      <p key={index} className="my-2 leading-relaxed text-slate-800 text-sm md:text-base font-normal">
+      <p key={index} className="my-2 leading-relaxed text-sm md:text-base font-normal" style={{ color: bodyColor || undefined }}>
         {renderInlineFormatted(trimmed)}
       </p>
     );

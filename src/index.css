@@ -29,105 +29,89 @@
 
 /* Neumorphic / Soft UI System Styling */
 .neu-bg {
-  background-color: #eaf0f8;
+  background-color: #eaf0f8 !important;
 }
 
 .neu-flat {
-  background: #eaf0f8;
-  box-shadow: 6px 6px 14px #c8d1e2, -6px -6px 14px #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: #eaf0f8 !important;
+  box-shadow: 6px 6px 16px #c2cedf, -6px -6px 16px #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
 }
 
 .neu-card {
-  background: #eaf0f8;
-  box-shadow: 5px 5px 12px #c8d1e2, -5px -5px 12px #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: #eaf0f8 !important;
+  box-shadow: 6px 6px 16px #c2cedf, -6px -6px 16px #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
 }
 
 .neu-button {
-  background: #eaf0f8;
-  box-shadow: 4px 4px 10px #c8d1e2, -4px -4px 10px #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: #eaf0f8 !important;
+  box-shadow: 4px 4px 10px #c2cedf, -4px -4px 10px #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
   transition: all 0.2s ease-in-out;
 }
 
 .neu-button:hover {
-  background: #f2f7fd;
-  box-shadow: 5px 5px 12px #bdc7da, -5px -5px 12px #ffffff;
+  background: #f2f7fd !important;
+  box-shadow: 5px 5px 12px #b8c6dc, -5px -5px 12px #ffffff !important;
   transform: translateY(-1px);
 }
 
 .neu-button:active, .neu-pressed {
-  background: #eaf0f8;
-  box-shadow: inset 3px 3px 6px #c8d1e2, inset -3px -3px 6px #ffffff;
-  border: 1px solid rgba(200, 209, 226, 0.5);
+  background: #eaf0f8 !important;
+  box-shadow: inset 3px 3px 6px #c2cedf, inset -3px -3px 6px #ffffff !important;
+  border: 1px solid rgba(200, 209, 226, 0.6) !important;
 }
 
 .neu-input {
-  background: #eaf0f8;
-  box-shadow: inset 3px 3px 6px #c8d1e2, inset -3px -3px 6px #ffffff;
-  border: 1px solid rgba(215, 225, 240, 0.8);
+  background: #eaf0f8 !important;
+  box-shadow: inset 3px 3px 6px #c2cedf, inset -3px -3px 6px #ffffff !important;
+  border: 1px solid rgba(215, 225, 240, 0.9) !important;
 }
 
 .neu-primary-btn {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  box-shadow: 4px 4px 12px #c8d1e2, -4px -4px 12px #ffffff;
-  color: #ffffff;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+  box-shadow: 4px 4px 12px #c2cedf, -4px -4px 12px #ffffff !important;
+  color: #ffffff !important;
   transition: all 0.2s ease;
 }
 
 .neu-primary-btn:hover {
-  background: linear-gradient(135deg, #1d4ed8, #1e40af);
-  box-shadow: 5px 5px 14px #bdc7da, -5px -5px 14px #ffffff;
+  background: linear-gradient(135deg, #1d4ed8, #1e40af) !important;
+  box-shadow: 5px 5px 14px #b8c6dc, -5px -5px 14px #ffffff !important;
   transform: translateY(-1px);
 }
 
-/* Dark Mode Neumorphic Override */
+/* Dark Mode Soft Neumorphic Styling Override - Pure Soft Light Theme */
 .dark body {
-  background-color: #0b1329;
-  color: #f1f5f9;
+  background-color: #eaf0f8;
+  color: #0f172a;
 }
 
 .dark .neu-bg {
-  background-color: #0b1329;
+  background-color: #eaf0f8;
 }
 
-.dark .neu-flat {
-  background: #0f1a36;
-  box-shadow: 6px 6px 14px #060b18, -6px -6px 14px #182954;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.dark .neu-card {
-  background: #0f1a36;
-  box-shadow: 5px 5px 12px #060b18, -5px -5px 12px #182954;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
+.dark .neu-flat,
+.dark .neu-card,
 .dark .neu-button {
-  background: #0f1a36;
-  box-shadow: 4px 4px 10px #060b18, -4px -4px 10px #182954;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #f1f5f9;
-}
-
-.dark .neu-button:hover {
-  background: #0f1a36;
-  box-shadow: 6px 6px 14px #040710, -6px -6px 14px #20366e;
+  background: #eaf0f8 !important;
+  box-shadow: 5px 5px 12px #c2cedf, -5px -5px 12px #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  color: #0f172a !important;
 }
 
 .dark .neu-button:active, .dark .neu-pressed {
-  background: #0f1a36;
-  box-shadow: inset 3px 3px 6px #060b18, inset -3px -3px 6px #182954;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #60a5fa;
+  background: #eaf0f8 !important;
+  box-shadow: inset 3px 3px 6px #c2cedf, inset -3px -3px 6px #ffffff !important;
+  color: #1d4ed8 !important;
 }
 
 .dark .neu-input {
-  background: #0f1a36;
-  box-shadow: inset 3px 3px 6px #060b18, inset -3px -3px 6px #182954;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #f8fafc;
+  background: #eaf0f8 !important;
+  box-shadow: inset 3px 3px 6px #c2cedf, inset -3px -3px 6px #ffffff !important;
+  border: 1px solid rgba(215, 225, 240, 0.9) !important;
+  color: #0f172a !important;
 }
 
 /* Word-style A4 Paper Specifications */

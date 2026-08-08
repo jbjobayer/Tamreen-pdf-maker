@@ -155,7 +155,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </div>
 
       {/* Neumorphic Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#eaf0f8] p-1 rounded-3xl">
         {neumorphicTools.map((tool) => (
           <div
             key={tool.id}
@@ -166,28 +166,28 @@ export const HomePage: React.FC<HomePageProps> = ({
                 onOpenCreateModal(tool.id);
               }
             }}
-            className="neu-card p-5 rounded-3xl transition-all duration-200 cursor-pointer hover:-translate-y-1 active:scale-98 flex items-start justify-between gap-4 group"
+            className="neu-card p-5 rounded-3xl transition-all duration-200 cursor-pointer hover:-translate-y-1 active:scale-98 flex items-start justify-between gap-4 group bg-[#eaf0f8]"
           >
             <div className="flex items-start gap-4">
-              <div className="neu-button p-3.5 rounded-2xl shrink-0 group-hover:scale-105 transition">
+              <div className="neu-button p-3.5 rounded-2xl shrink-0 group-hover:scale-105 transition bg-[#eaf0f8]">
                 {tool.icon}
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-extrabold text-base text-slate-900 group-hover:text-blue-700 transition">
+                  <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-900 group-hover:text-blue-700 transition">
                     {tool.title}
                   </h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md neu-button text-slate-600">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full neu-button text-slate-700 bg-[#eaf0f8]">
                     {tool.badge}
                   </span>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                <p className="text-xs text-slate-600 dark:text-slate-600 leading-relaxed font-medium">
                   {tool.description}
                 </p>
               </div>
             </div>
 
-            <div className="neu-button p-2.5 rounded-xl shrink-0 text-slate-400 group-hover:text-blue-600 transition">
+            <div className="neu-button p-2.5 rounded-xl shrink-0 text-slate-500 group-hover:text-blue-600 transition bg-[#eaf0f8]">
               <ArrowRight className="w-4 h-4" />
             </div>
           </div>

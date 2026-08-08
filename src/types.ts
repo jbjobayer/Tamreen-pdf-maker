@@ -163,6 +163,11 @@ export interface DocumentData {
   theme: StyleTheme;
   primaryFont: string;
   accentColor: string;
+  headingColor?: string;
+  bodyColor?: string;
+  targetWordCount?: number;
+  targetPageCount?: number;
+  includeTOC?: boolean;
   hasCover: boolean;
   coverData?: CoverData;
   tableOfContents?: { title: string; level: number; page: number }[];

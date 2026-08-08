@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Type as TypeIcon,
   Columns,
@@ -239,8 +239,8 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
     bodyFontSize: 12,
     footnoteFontSize: 9,
     fontFamily: document.primaryFont || 'Noto Serif Bengali',
-    bodyColor: '#1e293b',
-    headingColor: '#0f172a',
+    bodyColor: document.bodyColor || '#1e293b',
+    headingColor: document.headingColor || '#0f172a',
     backgroundColor: '#ffffff',
     pageSize: 'A4',
     margins: 'normal',
@@ -431,8 +431,61 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
     }
   };
 
-  // Page Count calculation for scaled container height
-  const totalPages = (document.hasCover ? 1 : 0) + (document.tableOfContents && document.tableOfContents.length > 0 ? 1 : 0) + 1;
+  // Dynamic Page Chunking & Automatic Page Numbering Engine
+  const contentPages = useMemo(() => {
+    if (!document.sections || document.sections.length === 0) {
+      return [[]];
+    }
+
+    const pages: DocumentSection[][] = [];
+    let currentPage: DocumentSection[] = [];
+    let currentCost = 0;
+    // Estimated capacity for single A4 page content (adjusted by font size and line height)
+    const fontMultiplier = (layoutSettings.fontSize || 12) / 12;
+    const lineMultiplier = (layoutSettings.lineHeight || 1.6) / 1.6;
+    const basePageCapacity = 1400 / (fontMultiplier * lineMultiplier);
+
+    for (const sec of document.sections) {
+      let secCost = sec.content ? sec.content.length : 0;
+      secCost += sec.heading ? 120 : 0;
+      if (sec.mcqs && sec.mcqs.length > 0) {
+        secCost += sec.mcqs.length * 320;
+      }
+      if (sec.callout) secCost += 220;
+      if (sec.table) secCost += 300;
+      if (sec.universityAnswer) secCost += 400;
+
+      if (currentPage.length > 0 && currentCost + secCost > basePageCapacity) {
+        pages.push(currentPage);
+        currentPage = [sec];
+        currentCost = secCost;
+      } else {
+        currentPage.push(sec);
+        currentCost += secCost;
+      }
+    }
+
+    if (currentPage.length > 0) {
+      pages.push(currentPage);
+    }
+
+    return pages.length > 0 ? pages : [[]];
+  }, [document.sections, layoutSettings.fontSize, layoutSettings.lineHeight]);
+
+  const totalWordCount = useMemo(() => {
+    if (!document.sections) return 0;
+    return document.sections.reduce((acc, sec) => {
+      const text = (sec.heading || '') + ' ' + (sec.content || '');
+      const words = text.trim().split(/\s+/).filter(Boolean);
+      return acc + words.length;
+    }, 0);
+  }, [document.sections]);
+
+  const showTOC = document.includeTOC !== false && document.tableOfContents && document.tableOfContents.length > 0;
+  const coverPageCount = document.hasCover ? 1 : 0;
+  const tocPageCount = showTOC ? 1 : 0;
+  const totalPages = coverPageCount + tocPageCount + contentPages.length;
+
   const unscaledPageHeight = 1123; // 297mm @ 96dpi
   const pageGap = 40;
   const totalUnscaledHeight = totalPages * unscaledPageHeight + (totalPages - 1) * pageGap;
@@ -786,10 +839,15 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
           <div className="w-full flex flex-col items-center gap-6 py-2">
             {/* Neumorphic Document Info Card */}
             <div className="no-print w-full max-w-2xl neu-card p-4 rounded-3xl flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="space-y-0.5">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                  {document.documentType || 'A4 PUBLICATION'} • A4 WORD PAPER CANVAS
-                </span>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                    {document.documentType || 'A4 PUBLICATION'} • A4 WORD PAPER CANVAS
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-mono text-[10px] font-extrabold border border-blue-200/60 dark:border-blue-800/60">
+                    {totalPages} পৃষ্ঠা (Page 1 of {totalPages}) • ~{totalWordCount} শব্দ (Words)
+                  </span>
+                </div>
                 <h2 className="font-black text-slate-900 dark:text-white text-sm sm:text-base line-clamp-1">
                   {document.title}
                 </h2>
@@ -921,9 +979,12 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                           <p className="font-extrabold text-slate-900 text-sm">{document.author || 'তামরীন এআই পাবলিশার'}</p>
                           <p className="text-slate-500">{document.organization || 'জাতীয় শিক্ষাক্রম ও গবেষণা বোর্ড'}</p>
                         </div>
-                        <div className="text-right font-mono text-[11px]">
-                          <span className="px-3 py-1 bg-slate-100 rounded-lg text-slate-800 font-bold">
+                        <div className="text-right font-mono text-[11px] flex items-center gap-2">
+                          <span className="px-3 py-1 bg-slate-100 rounded-lg text-slate-800 font-bold border border-slate-200">
                             A4 PRINT FORMAT
+                          </span>
+                          <span className="px-3 py-1 bg-blue-50 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 font-extrabold rounded-lg border border-blue-200/80">
+                            Page 1 of {totalPages}
                           </span>
                         </div>
                       </div>
@@ -931,7 +992,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   )}
 
                   {/* ----------------- PAGE 2: TABLE OF CONTENTS ----------------- */}
-                  {document.tableOfContents && document.tableOfContents.length > 0 && (
+                  {showTOC && (
                     <div
                       className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative border border-slate-300 rounded-sm overflow-hidden`}
                       style={{ direction: isRTL ? 'rtl' : 'ltr' }}
@@ -952,9 +1013,11 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                       )}
 
                       {/* Header */}
-                      <div className="border-b border-slate-200 pb-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-                        <span>{layoutSettings.headerText}</span>
-                        <span>পৃষ্ঠা ২</span>
+                      <div className="border-b border-slate-200 pb-3 flex justify-between items-center text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+                        <span className="font-bold text-slate-600">{layoutSettings.headerText || 'TABLE OF CONTENTS'}</span>
+                        <span className="text-xs font-extrabold text-blue-600 font-mono">
+                          Page {coverPageCount + 1} of {totalPages}
+                        </span>
                       </div>
 
                       {/* TOC Body */}
@@ -969,194 +1032,238 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                         </div>
 
                         <div className="space-y-4">
-                          {document.tableOfContents.map((item, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-baseline justify-between gap-4 border-b border-dotted border-slate-300 pb-2.5"
-                            >
-                              <span className="font-bold text-sm text-slate-800">{item.title}</span>
-                              <span className="font-mono text-xs text-slate-500">পৃষ্ঠা {item.page}</span>
-                            </div>
-                          ))}
+                          {document.tableOfContents.map((item, idx) => {
+                            const secIdx = document.sections.findIndex((s) => s.heading === item.title);
+                            let itemPageNum = item.page || 1;
+                            if (secIdx !== -1) {
+                              let accumCost = 0;
+                              let pageFound = 0;
+                              const fontMultiplier = (layoutSettings.fontSize || 12) / 12;
+                              const lineMultiplier = (layoutSettings.lineHeight || 1.6) / 1.6;
+                              const baseCap = 1400 / (fontMultiplier * lineMultiplier);
+                              for (let i = 0; i < secIdx; i++) {
+                                const s = document.sections[i];
+                                let c = (s.content ? s.content.length : 0) + (s.heading ? 120 : 0);
+                                if (s.mcqs) c += s.mcqs.length * 320;
+                                if (s.callout) c += 220;
+                                if (accumCost > 0 && accumCost + c > baseCap) {
+                                  pageFound++;
+                                  accumCost = c;
+                                } else {
+                                  accumCost += c;
+                                }
+                              }
+                              itemPageNum = coverPageCount + tocPageCount + pageFound + 1;
+                            }
+                            return (
+                              <div
+                                key={idx}
+                                className="flex items-baseline justify-between gap-4 border-b border-dotted border-slate-300 pb-2.5"
+                              >
+                                <span className="font-bold text-sm text-slate-800">{item.title}</span>
+                                <span className="font-mono text-xs font-extrabold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-200/60">
+                                  Page {itemPageNum} of {totalPages}
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
 
                       {/* Footer */}
-                      <div className="border-t border-slate-200 pt-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase">
-                        <span>{layoutSettings.footerText}</span>
-                        <span>তামরীন অফিশিয়াল এডিশন</span>
+                      <div className="border-t border-slate-200 pt-3 flex items-center justify-between text-[11px] font-mono text-slate-500 uppercase tracking-wider">
+                        <span className="truncate max-w-[250px] font-medium">{layoutSettings.footerText || 'তামরীন অফিশিয়াল এডিশন'}</span>
+                        <span className="font-extrabold text-blue-700 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-md border border-blue-200/60 shadow-xs">
+                          Page {coverPageCount + 1} of {totalPages}
+                        </span>
+                        <span className="text-slate-400 font-sans font-bold">TABLE OF CONTENTS</span>
                       </div>
                     </div>
                   )}
 
-                  {/* ----------------- PAGE 3+: CONTENT BODY (A4 CANVAS) ----------------- */}
-                  <div
-                    className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative border border-slate-300 rounded-sm overflow-hidden`}
-                    style={{ direction: isRTL ? 'rtl' : 'ltr' }}
-                  >
-                    {/* Light Watermark Overlay */}
-                    {layoutSettings.showWatermark && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 select-none overflow-hidden">
-                        <div
-                          className="font-extrabold text-3xl sm:text-4xl md:text-5xl tracking-widest text-center transform -rotate-30 uppercase select-none font-sans"
-                          style={{
-                            color: '#1e293b',
-                            opacity: layoutSettings.watermarkOpacity ?? 0.08,
-                          }}
-                        >
-                          {layoutSettings.watermarkText || 'At-Tamreen Academy'}
-                        </div>
-                      </div>
-                    )}
+                  {/* ----------------- PAGE 3+: CONTENT BODY (A4 CANVAS PAGES) ----------------- */}
+                  {contentPages.map((pageSections, pageIdx) => {
+                    const currentPageNum = coverPageCount + tocPageCount + pageIdx + 1;
+                    const isLastContentPage = pageIdx === contentPages.length - 1;
 
-                    {/* Running Header */}
-                    <div className="border-b border-slate-200 pb-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-                      <span>{document.title}</span>
-                      <span>A4 PAPER CANVAS</span>
-                    </div>
-
-                    {/* Body Content Sections */}
-                    <div
-                      className={`my-8 flex-1 space-y-8 ${
-                        layoutSettings.columnCount === 2 ? 'columns-1 md:columns-2 gap-8' : 'space-y-8'
-                      }`}
-                    >
-                      {document.sections.map((sec) => (
-                        <div
-                          key={sec.id}
-                          className="break-inside-avoid space-y-4 p-5 rounded-2xl bg-white border border-slate-100 shadow-sm relative group"
-                        >
-                          {/* Section Heading */}
-                          <div className="border-b border-slate-100 pb-2 flex items-center justify-between">
-                            <h2
-                              className="font-extrabold text-xl md:text-2xl tracking-tight leading-snug"
-                              style={{ color: layoutSettings.accentColor }}
-                            >
-                              {sec.heading}
-                            </h2>
-                            <button
-                              onClick={() => onOpenAIAssistantForSection(sec.id, sec.content)}
-                              className="no-print opacity-80 hover:opacity-100 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-bold flex items-center gap-1 transition"
-                            >
-                              <Sparkles className="w-3 h-3 text-amber-500" />
-                              <span>এআই এডিট</span>
-                            </button>
-                          </div>
-
-                          {/* Formatted Content Rendering */}
-                          <div
-                            style={{
-                              fontSize: `${layoutSettings.fontSize}px`,
-                              lineHeight: layoutSettings.lineHeight,
-                              textAlign: layoutSettings.textAlign || 'justify',
-                            }}
-                          >
-                            <FormattedContent
-                              content={sec.content}
-                              accentColor={layoutSettings.accentColor}
-                            />
-                          </div>
-
-                          {/* Callout Box */}
-                          {sec.callout && (
+                    return (
+                      <div
+                        key={`content-page-${pageIdx}`}
+                        className={`pdf-page-container a4-paper ${getFontFamilyClass(layoutSettings.primaryFont)} p-10 md:p-16 flex flex-col justify-between relative border border-slate-300 rounded-sm overflow-hidden`}
+                        style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+                      >
+                        {/* Light Watermark Overlay */}
+                        {layoutSettings.showWatermark && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 select-none overflow-hidden">
                             <div
-                              className="p-4 rounded-xl bg-slate-50 border-l-4 my-4 shadow-sm"
-                              style={{ borderColor: layoutSettings.accentColor }}
+                              className="font-extrabold text-3xl sm:text-4xl md:text-5xl tracking-widest text-center transform -rotate-30 uppercase select-none font-sans"
+                              style={{
+                                color: '#1e293b',
+                                opacity: layoutSettings.watermarkOpacity ?? 0.08,
+                              }}
                             >
-                              {sec.callout.title && (
-                                <div className="flex items-center gap-2 mb-1 text-xs font-bold uppercase tracking-wider text-slate-700">
-                                  <Quote className="w-3.5 h-3.5 text-blue-600" />
-                                  <span>{sec.callout.title}</span>
+                              {layoutSettings.watermarkText || 'At-Tamreen Academy'}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Running Header */}
+                        <div className="border-b border-slate-200 pb-3 flex justify-between items-center text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+                          <span className="truncate max-w-[380px] font-bold text-slate-600">{document.title}</span>
+                          <span className="text-xs font-extrabold text-blue-600 font-mono shrink-0">
+                            Page {currentPageNum} of {totalPages}
+                          </span>
+                        </div>
+
+                        {/* Body Content Sections */}
+                        <div
+                          className={`my-6 flex-1 space-y-6 ${
+                            layoutSettings.columnCount === 2 ? 'columns-1 md:columns-2 gap-8' : 'space-y-6'
+                          }`}
+                        >
+                          {pageSections.map((sec) => (
+                            <div
+                              key={sec.id}
+                              className="break-inside-avoid space-y-4 p-5 rounded-2xl bg-white border border-slate-100 shadow-sm relative group"
+                            >
+                              {/* Section Heading */}
+                              <div className="border-b border-slate-100 pb-2 flex items-center justify-between">
+                                <h2
+                                  className="font-extrabold text-xl md:text-2xl tracking-tight leading-snug"
+                                  style={{ color: layoutSettings.accentColor }}
+                                >
+                                  {sec.heading}
+                                </h2>
+                                <button
+                                  onClick={() => onOpenAIAssistantForSection(sec.id, sec.content)}
+                                  className="no-print opacity-80 hover:opacity-100 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-bold flex items-center gap-1 transition"
+                                >
+                                  <Sparkles className="w-3 h-3 text-amber-500" />
+                                  <span>এআই এডিট</span>
+                                </button>
+                              </div>
+
+                              {/* Formatted Content Rendering */}
+                              <div
+                                style={{
+                                  fontSize: `${layoutSettings.fontSize}px`,
+                                  lineHeight: layoutSettings.lineHeight,
+                                  textAlign: layoutSettings.textAlign || 'justify',
+                                }}
+                              >
+                                <FormattedContent
+                                  content={sec.content}
+                                  accentColor={layoutSettings.accentColor}
+                                  headingColor={layoutSettings.headingColor}
+                                  bodyColor={layoutSettings.bodyColor}
+                                />
+                              </div>
+
+                              {/* Callout Box */}
+                              {sec.callout && (
+                                <div
+                                  className="p-4 rounded-xl bg-slate-50 border-l-4 my-4 shadow-sm"
+                                  style={{ borderColor: layoutSettings.accentColor }}
+                                >
+                                  {sec.callout.title && (
+                                    <div className="flex items-center gap-2 mb-1 text-xs font-bold uppercase tracking-wider text-slate-700">
+                                      <Quote className="w-3.5 h-3.5 text-blue-600" />
+                                      <span>{sec.callout.title}</span>
+                                    </div>
+                                  )}
+                                  <p className="text-xs text-slate-800 leading-relaxed font-serif italic">
+                                    {sec.callout.text}
+                                  </p>
                                 </div>
                               )}
-                              <p className="text-xs text-slate-800 leading-relaxed font-serif italic">
-                                {sec.callout.text}
-                              </p>
-                            </div>
-                          )}
 
-                          {/* MCQ Questions Rendering */}
-                          {sec.mcqs && sec.mcqs.length > 0 && (
-                            <div className="my-6 space-y-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200">
-                              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                                <span className="text-xs font-bold uppercase tracking-widest text-slate-700 flex items-center gap-2">
-                                  <Check className="w-4 h-4 text-emerald-600" />
-                                  <span>বহুনির্বাচনী প্রশ্ন ব্যাংক ({sec.mcqs.length}টি প্রশ্ন)</span>
-                                </span>
-                              </div>
-
-                              <div className="space-y-4">
-                                {sec.mcqs.map((q, qIdx) => (
-                                  <div key={q.id || qIdx} className="p-4 bg-white rounded-xl border border-slate-200 space-y-3 shadow-sm">
-                                    <h4 className="font-bold text-sm text-slate-900 leading-snug">
-                                      <span className="text-blue-600 font-extrabold mr-1.5">
-                                        প্রশ্ন {q.questionNumber || qIdx + 1}.
-                                      </span>
-                                      {q.question}
-                                    </h4>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                                      {q.options.map((opt) => {
-                                        const isCorrect = opt.key === q.correctAnswer;
-                                        return (
-                                          <div
-                                            key={opt.key}
-                                            className={`p-2.5 rounded-lg border flex items-start gap-2.5 transition ${
-                                              isCorrect
-                                                ? 'bg-emerald-50 border-emerald-400 text-emerald-950 font-semibold'
-                                                : 'bg-slate-50 border-slate-200 text-slate-700'
-                                            }`}
-                                          >
-                                            <span
-                                              className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 ${
-                                                isCorrect ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
-                                              }`}
-                                            >
-                                              {opt.key}
-                                            </span>
-                                            <span className="text-xs pt-0.5">{opt.text}</span>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-
-                                    {q.explanation && (
-                                      <div className="mt-2 p-3 bg-blue-50/60 border border-blue-100 rounded-lg text-xs space-y-1">
-                                        <span className="font-bold text-blue-900 text-[11px] uppercase tracking-wider block">
-                                          উত্তরের ব্যাখ্যা:
-                                        </span>
-                                        <p className="text-blue-950 leading-relaxed text-[11px]">{q.explanation}</p>
-                                      </div>
-                                    )}
+                              {/* MCQ Questions Rendering */}
+                              {sec.mcqs && sec.mcqs.length > 0 && (
+                                <div className="my-6 space-y-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200">
+                                  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                                    <span className="text-xs font-bold uppercase tracking-widest text-slate-700 flex items-center gap-2">
+                                      <Check className="w-4 h-4 text-emerald-600" />
+                                      <span>বহুনির্বাচনী প্রশ্ন ব্যাংক ({sec.mcqs.length}টি প্রশ্ন)</span>
+                                    </span>
                                   </div>
+
+                                  <div className="space-y-4">
+                                    {sec.mcqs.map((q, qIdx) => (
+                                      <div key={q.id || qIdx} className="p-4 bg-white rounded-xl border border-slate-200 space-y-3 shadow-sm">
+                                        <h4 className="font-bold text-sm text-slate-900 leading-snug">
+                                          <span className="text-blue-600 font-extrabold mr-1.5">
+                                            প্রশ্ন {q.questionNumber || qIdx + 1}.
+                                          </span>
+                                          {q.question}
+                                        </h4>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                          {q.options.map((opt) => {
+                                            const isCorrect = opt.key === q.correctAnswer;
+                                            return (
+                                              <div
+                                                key={opt.key}
+                                                className={`p-2.5 rounded-lg border flex items-start gap-2.5 transition ${
+                                                  isCorrect
+                                                    ? 'bg-emerald-50 border-emerald-400 text-emerald-950 font-semibold'
+                                                    : 'bg-slate-50 border-slate-200 text-slate-700'
+                                                }`}
+                                              >
+                                                <span
+                                                  className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 ${
+                                                    isCorrect ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
+                                                  }`}
+                                                >
+                                                  {opt.key}
+                                                </span>
+                                                <span className="text-xs pt-0.5">{opt.text}</span>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+
+                                        {q.explanation && (
+                                          <div className="mt-2 p-3 bg-blue-50/60 border border-blue-100 rounded-lg text-xs space-y-1">
+                                            <span className="font-bold text-blue-900 text-[11px] uppercase tracking-wider block">
+                                              উত্তরের ব্যাখ্যা:
+                                            </span>
+                                            <p className="text-blue-950 leading-relaxed text-[11px]">{q.explanation}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+
+                          {/* Document References */}
+                          {isLastContentPage && document.references && document.references.length > 0 && (
+                            <div className="pt-6 border-t-2 border-slate-200 space-y-2 break-inside-avoid">
+                              <h4 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider">
+                                রেফারেন্স ও তথ্যসূত্র (References)
+                              </h4>
+                              <ol className="list-decimal pl-5 text-xs text-slate-600 space-y-1">
+                                {document.references.map((ref, rIdx) => (
+                                  <li key={rIdx}>{ref}</li>
                                 ))}
-                              </div>
+                              </ol>
                             </div>
                           )}
                         </div>
-                      ))}
 
-                      {/* Document References */}
-                      {document.references && document.references.length > 0 && (
-                        <div className="pt-6 border-t-2 border-slate-200 space-y-2">
-                          <h4 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider">
-                            রেফারেন্স ও তথ্যসূত্র (References)
-                          </h4>
-                          <ol className="list-decimal pl-5 text-xs text-slate-600 space-y-1">
-                            {document.references.map((ref, rIdx) => (
-                              <li key={rIdx}>{ref}</li>
-                            ))}
-                          </ol>
+                        {/* Footer */}
+                        <div className="border-t border-slate-200 pt-3 flex items-center justify-between text-[11px] font-mono text-slate-500 uppercase tracking-wider">
+                          <span className="truncate max-w-[250px] font-medium">{layoutSettings.footerText || document.organization || 'At-Tamreen Publication'}</span>
+                          <span className="font-extrabold text-blue-700 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-md border border-blue-200/60 shadow-xs">
+                            Page {currentPageNum} of {totalPages}
+                          </span>
+                          <span className="text-slate-400 font-sans font-bold">A4 CANVAS</span>
                         </div>
-                      )}
-                    </div>
-
-                    {/* Footer */}
-                    <div className="border-t border-slate-200 pt-3 flex justify-between text-[11px] font-mono text-slate-400 uppercase">
-                      <span>{layoutSettings.footerText}</span>
-                      <span>পৃষ্ঠা ৩</span>
-                    </div>
-                  </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
